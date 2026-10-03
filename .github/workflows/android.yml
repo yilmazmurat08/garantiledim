@@ -28,7 +28,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Birim testleri ve derleme
-        run: ./gradlew --stacktrace testDebugUnitTest assembleDebug assembleDebugAndroidTest assembleRelease
+        run: ./gradlew --continue testDebugUnitTest assembleDebug assembleDebugAndroidTest assembleRelease
 
       - name: KVM'yi etkinleştir
         run: |

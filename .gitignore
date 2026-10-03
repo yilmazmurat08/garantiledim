@@ -12,3 +12,4 @@
 *.aab
 *.jks
 *.keystore
+!app/signing/test.keystore
