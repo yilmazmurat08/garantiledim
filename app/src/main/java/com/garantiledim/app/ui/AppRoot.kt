@@ -1,5 +1,10 @@
 package com.garantiledim.app.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -19,17 +24,21 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
@@ -54,6 +63,7 @@ import com.garantiledim.app.ui.profile.ProfileScreen
 import com.garantiledim.app.ui.theme.GColors
 import com.garantiledim.app.ui.theme.GShapes
 import com.garantiledim.app.ui.theme.GType
+import kotlinx.coroutines.flow.MutableStateFlow
 
 enum class Tab(val route: String, val label: String, @DrawableRes val icon: Int) {
     HOME("home", "Ana Sayfa", R.drawable.ic_home),
@@ -82,10 +92,32 @@ inline fun <reified VM : ViewModel> appViewModelFactory(
 }
 
 @Composable
-fun AppRoot() {
+fun AppRoot(openProduct: MutableStateFlow<Long?>) {
     val navController = rememberNavController()
     val backStack by navController.currentBackStackEntryAsState()
     val currentTab = Tab.entries.firstOrNull { it.route == backStack?.destination?.route }
+    val context = LocalContext.current
+
+    // Bildirime dokunulunca ilgili ürünün detayı açılır.
+    val pendingProduct by openProduct.collectAsStateWithLifecycle()
+    LaunchedEffect(pendingProduct) {
+        val id = pendingProduct ?: return@LaunchedEffect
+        navController.navigate(Routes.detail(id)) { launchSingleTop = true }
+        openProduct.value = null
+    }
+
+    // Bildirim izni ilk ürün kaydedildiğinde istenir (Android 13+).
+    val notificationPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { }
+    val askNotificationPermission = {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
 
     Scaffold(
         containerColor = GColors.Background,
@@ -133,6 +165,7 @@ fun AppRoot() {
                 EditProductScreen(
                     onBack = { navController.popBackStack() },
                     onCreated = { id ->
+                        askNotificationPermission()
                         navController.navigate(Routes.detail(id)) {
                             popUpTo(Routes.EDIT) { inclusive = true }
                         }

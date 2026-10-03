@@ -32,6 +32,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -49,6 +51,8 @@ import com.garantiledim.app.ui.components.GIcon
 import com.garantiledim.app.ui.components.LabeledTextField
 import com.garantiledim.app.ui.components.SectionLabel
 import com.garantiledim.app.ui.components.TimePickerSheet
+import com.garantiledim.app.ui.components.openNotificationSettings
+import com.garantiledim.app.ui.components.rememberNotificationsEnabled
 import com.garantiledim.app.ui.components.surfaceCard
 import com.garantiledim.app.ui.theme.GColors
 import com.garantiledim.app.ui.theme.GShapes
@@ -103,6 +107,8 @@ fun ProfileScreen(
 ) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
     val s = settings ?: return
+    val notificationsEnabled = rememberNotificationsEnabled()
+    val context = LocalContext.current
     var dialog by rememberSaveable { mutableStateOf<ProfileDialog?>(null) }
     val photoPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         uri?.let(viewModel::setPhoto)
@@ -160,6 +166,13 @@ fun ProfileScreen(
                 value = "Her gün " + String.format(Locale.ROOT, "%02d:%02d", s.notifyHour, s.notifyMinute),
                 onClick = { dialog = ProfileDialog.TIME },
             )
+            HorizontalDivider(color = GColors.SurfaceHigh)
+            SettingsRow(
+                title = "Bildirim izni",
+                value = if (notificationsEnabled) "Açık" else "Kapalı · açmak için dokun",
+                valueColor = if (notificationsEnabled) GColors.Success else GColors.Danger,
+                onClick = { openNotificationSettings(context) },
+            )
         }
 
         SettingsGroup("Varsayılan süreler") {
@@ -208,6 +221,7 @@ private fun SettingsGroup(title: String, content: @Composable () -> Unit) {
 private fun SettingsRow(
     title: String,
     value: String? = null,
+    valueColor: Color = GColors.TextSecondary,
     trailing: String? = null,
     badge: String? = null,
     onClick: (() -> Unit)? = null,
@@ -223,7 +237,7 @@ private fun SettingsRow(
     ) {
         Column(Modifier.weight(1f)) {
             Text(title, style = GType.BodyMedium, color = GColors.Text)
-            if (value != null) Text(value, style = GType.Caption, color = GColors.TextSecondary)
+            if (value != null) Text(value, style = GType.Caption, color = valueColor)
         }
         if (trailing != null) Text(trailing, style = GType.Caption.copy(fontSize = GType.Caption.fontSize * 1.08f), color = GColors.TextSecondary)
         if (badge != null) {

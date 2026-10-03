@@ -1,5 +1,6 @@
 package com.garantiledim.app
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -10,15 +11,21 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.garantiledim.app.notifications.EXTRA_PRODUCT_ID
 import com.garantiledim.app.ui.AppRoot
 import com.garantiledim.app.ui.theme.GarantiledimTheme
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 class MainActivity : ComponentActivity() {
+
+    /** Bildirimden açılan ürün; AppRoot detay ekranına gider ve değeri sıfırlar. */
+    private val openProduct = MutableStateFlow<Long?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -26,6 +33,7 @@ class MainActivity : ComponentActivity() {
             statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
         )
+        if (savedInstanceState == null) handleIntent(intent)
 
         val clock = (application as GarantiledimApp).container.today
         lifecycleScope.launch {
@@ -39,9 +47,19 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             GarantiledimTheme {
-                AppRoot()
+                AppRoot(openProduct = openProduct)
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        val id = intent?.getLongExtra(EXTRA_PRODUCT_ID, -1L) ?: -1L
+        if (id > 0) openProduct.value = id
     }
 
     private fun millisUntilMidnight(): Long {

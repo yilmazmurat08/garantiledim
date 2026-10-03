@@ -7,6 +7,9 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+// CI'da her derlemenin numarası; telefona yeni sürüm eskisinin üzerine kurulabilsin diye artar.
+val buildNumber = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
+
 android {
     namespace = "com.garantiledim.app"
     compileSdk = 36
@@ -16,14 +19,26 @@ android {
         applicationId = "com.garantiledim.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = buildNumber
+        versionName = "1.0.$buildNumber"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        // Yalnızca test APK'ları için. Play Store'a yüklenecek sürüm ayrı, gizli bir anahtarla imzalanacak.
+        create("test") {
+            storeFile = file("signing/test.keystore")
+            storePassword = "garantiledim-test"
+            keyAlias = "test"
+            keyPassword = "garantiledim-test"
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            signingConfig = signingConfigs.getByName("test")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -39,6 +54,10 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    testOptions {
+        animationsDisabled = true
     }
 }
 
@@ -71,7 +90,15 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.work.runtime)
     implementation(libs.coil.compose)
 
     testImplementation(libs.junit)
+
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.rules)
+    debugImplementation(libs.androidx.compose.ui.test.manifest)
 }

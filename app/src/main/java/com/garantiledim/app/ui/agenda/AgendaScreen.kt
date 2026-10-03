@@ -18,11 +18,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -42,6 +44,8 @@ import com.garantiledim.app.ui.components.GIcon
 import com.garantiledim.app.ui.components.SectionLabel
 import com.garantiledim.app.ui.components.StatusBadge
 import com.garantiledim.app.ui.components.color
+import com.garantiledim.app.ui.components.openNotificationSettings
+import com.garantiledim.app.ui.components.rememberNotificationsEnabled
 import com.garantiledim.app.ui.components.surfaceCard
 import com.garantiledim.app.ui.theme.GColors
 import com.garantiledim.app.ui.theme.GShapes
@@ -83,6 +87,8 @@ fun AgendaScreen(
     viewModel: AgendaViewModel = viewModel(factory = appViewModelFactory { c, _ -> AgendaViewModel(c) }),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val notificationsEnabled = rememberNotificationsEnabled()
+    val context = LocalContext.current
 
     LazyColumn(
         modifier = Modifier.fillMaxSize().statusBarsPadding(),
@@ -91,6 +97,11 @@ fun AgendaScreen(
     ) {
         item(key = "title") {
             Text("Ajanda ve Hatırlatıcılar", style = GType.ScreenTitle, color = GColors.Text)
+        }
+        if (!notificationsEnabled) {
+            item(key = "notifications-off") {
+                NotificationsOffCard(onOpen = { openNotificationSettings(context) }, modifier = Modifier.padding(top = 6.dp))
+            }
         }
         item(key = "reminder") {
             ReminderCard(state.reminderText, onOpenSettings, Modifier.padding(top = 6.dp, bottom = 6.dp))
@@ -110,6 +121,30 @@ fun AgendaScreen(
             items(group.entries, key = { "${it.productId}-${it.deadline.type}" }) { entry ->
                 AgendaRow(entry, onClick = { onOpenProduct(entry.productId) })
             }
+        }
+    }
+}
+
+@Composable
+private fun NotificationsOffCard(onOpen: () -> Unit, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(GShapes.Card)
+            .background(GColors.Danger.copy(alpha = 0.14f))
+            .padding(start = 14.dp, end = 8.dp, top = 10.dp, bottom = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        GIcon(R.drawable.ic_bell, tint = GColors.Danger, size = 22.dp)
+        Text(
+            "Bildirimler kapalı, hatırlatma alamazsın",
+            style = GType.Label,
+            color = GColors.Text,
+            modifier = Modifier.weight(1f),
+        )
+        TextButton(onClick = onOpen) {
+            Text("Ayarlara git", style = GType.Label.copy(fontWeight = GType.Badge.fontWeight), color = GColors.Pink)
         }
     }
 }
