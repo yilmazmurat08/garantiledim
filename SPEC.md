@@ -79,10 +79,10 @@ Referans: `design/logo-referans.jpg` (orijinal), `design/logo-rozet.png` (yalnı
 - **Zemin:** Koyu mor daire (#2B1B4F → #3D2470 hafif geçişli), dışında lavanta → pembe parlak halka
 - **Yazı (wordmark):** "Garantiledim", kalın geometrik sans (Poppins 700 ile uyumlu). Açık zeminde #1E1838, koyu zeminde #F7F2FF
 - **Kullanım yerleri:**
-  - Uygulama ikonu (launcher): Adaptive icon; arka plan katmanı düz #2A1747, ön plan katmanı rozet dairesi (66dp güvenli alan içinde)
-  - Açılış ekranı: Android 12+ SplashScreen API ile #1C0D33 zemin üzerinde rozet; uygulama içi açılışta rozetin altında "Garantiledim" yazısı ve "Garanti sürelerini takipte kal!"
+  - Uygulama ikonu (launcher): Adaptive icon; arka plan katmanı düz #1C0D33, ön plan katmanı rozet dairesi (66dp güvenli alan içinde). Android 13+ temalı ikon için tek renkli (monochrome) katman
+  - Açılış ekranı: Android 12+ SplashScreen API ile #1C0D33 zemin üzerinde rozet. Ayrı bir uygulama içi açılış ekranı yapılmaz (Google'ın önerisine aykırı, açılışı yavaşlatır); logo + "Garantiledim" yazısı ilk açılıştaki boş durum ekranında gösterilir (madde 4.1)
   - Play Store ikonu: 512×512 PNG
-- **Gerekli dosya:** Play Store ve launcher için logonun en az 1024×1024 yüksek çözünürlüklü ya da vektör (SVG) sürümü gerekir. Mevcut referans görsel 512×279 boyutunda; içindeki rozet yaklaşık 160 piksel, bu yüzden ikon olarak doğrudan kullanılırsa bulanık görünür
+- **Dosyalar:** Referans görsel düşük çözünürlüklü (512×279, rozet ≈160 piksel) olduğu için logo vektör olarak yeniden çizildi: `design/logo.svg` ve Android'de `ic_launcher_foreground.xml`. Her boyutta net görünür; Play Store PNG'si bu vektörden üretilir. Orijinal logonun yüksek çözünürlüklü ya da SVG sürümü bulunursa bunların yerine konabilir
 
 ## 4. Ekranlar
 
@@ -110,8 +110,9 @@ Aktif sekme pembe (#FF7AB8) ikon + yazı ve üstünde 28×3dp pembe çizgi; pasi
   - Ürün adı
   - Renkli kalan süre rozeti (madde 6'daki metin biçimiyle, örn. "2 gün kaldı", "2 ay kaldı", "Süre doldu")
   - Saat ikonu + "İade · 5 Eki 2026" / "Garanti · 12 Ara 2026"
+  - Rozet ve tarih, ürünün **öne çıkan süresine** göredir: süresi devam eden sürelerden bitişi en yakın olanı; hepsi dolmuşsa en son dolanı (bkz. madde 6)
   - Karta dokunma → ürün detay ekranı
-- **Boş durum:** Hiç ürün yoksa "Günün Garantileri" yerine "İlk ürününü ekle" çağrısı ve pembe buton gösterilir
+- **Boş durum (ilk açılış):** Hiç ürün yoksa "Günün Garantileri" yerine logo, "Garantiledim" yazısı, "Garanti sürelerini takipte kal!" ve pembe "İlk ürününü ekle" butonu gösterilir
 
 ### 4.2 Garanti Belgelerim
 
@@ -119,7 +120,8 @@ Aktif sekme pembe (#FF7AB8) ikon + yazı ve üstünde 28×3dp pembe çizgi; pasi
 - Arama alanı ("Ürün veya mağaza ara"), ürün adı ve mağazada arar
 - Filtre çipleri: **Tümü / Yaklaşan** (0–13 gün) **/ Aktif** (süresi devam eden) **/ Süresi dolan**. Seçili çip pembe dolgulu
 - Liste (LazyColumn, her öğeye `key = product.id`). Sıralama: süresi devam edenler bitiş tarihine göre artan; süresi dolanlar listenin sonunda "Süresi dolanlar" ara başlığıyla, en yeni dolan üstte
-- Her satır: kategori renginde ikon kutusu, ürün adı, "mağaza · kategori", lavanta renkte "İade hakkı · 5 Eki 2026" satırı, sağda renkli kısa rozet ("2 gün", "2 ay", "2 yıl 8 ay", "Süre doldu")
+- Her satır: kategori renginde ikon kutusu, ürün adı, "mağaza · kategori", lavanta renkte öne çıkan sürenin satırı ("İade hakkı · 5 Eki 2026"), sağda renkli kısa rozet ("2 gün", "2 ay", "2 yıl 8 ay", "Süre doldu")
+- Filtreler öne çıkan süreye göre çalışır; bir ürün, takip edilen sürelerinin hepsi dolduğunda "Süresi dolan" sayılır
 - Sağ altta, alt menünün üstünde pembe + FAB (58dp, 18dp yuvarlak) → ürün ekleme ekranı
 - Satıra dokunma → ürün detay ekranı
 - Boş durumlar: hiç ürün yoksa ekleme çağrısı; arama/filtre sonucu boşsa "Bu filtreye uyan ürün yok"
@@ -132,8 +134,12 @@ Aktif sekme pembe (#FF7AB8) ikon + yazı ve üstünde 28×3dp pembe çizgi; pasi
 - **Mağaza**
 - **Satın alma tarihi** ve **Teslim tarihi** yan yana, tarih seçicili. Teslim tarihi boş bırakılırsa satın alma tarihiyle aynı kabul edilir. Teslim tarihi satın alma tarihinden önce olamaz (hata gösterilir)
 - **Kategori** çipleri: Elektronik / Beyaz eşya / Giyim / Diğer (seçili çip lavanta dolgulu)
-- **Süre türü** segmented control: İade hakkı / Garanti (seçili taraf pembe dolgulu)
-- **Bitiş tarihi (opsiyonel)** — etiket süre türüne göre "İade son günü (opsiyonel)" / "Garanti bitişi (opsiyonel)" olur. Boşken placeholder'da otomatik hesaplanan tarih görünür ("Otomatik: 05.10.2026"). Altında yardım metni: "Boş bırakırsan teslim tarihinden itibaren 14 gün (garantide 2 yıl) sayılır. Mağazanın süresi farklıysa buraya yaz." Bitiş tarihi teslim tarihinden önce olamaz
+- **Takip edilecek süreler:** Bir ürün iki süreyi birlikte taşıyabilir. Her süre için ayrı bir satır (yüzey kartı):
+  - **İade hakkı** — açma/kapama anahtarı, altında "Teslimden itibaren 14 gün", sağda bitiş tarihi ("05.10.2026")
+  - **Garanti** — açma/kapama anahtarı, altında "Teslimden itibaren 2 yıl", sağda bitiş tarihi ("21.09.2028")
+  - İkisi de varsayılan olarak açıktır; en az biri açık olmalıdır (ikisi de kapatılırsa hata gösterilir)
+  - Tarihe dokununca tarih seçici açılır ve süre elle değiştirilebilir (mağazanın farklı iade süresi, ek garanti vb.). Elle girilen tarihin altında "Elle girildi · Sıfırla" yazar; Sıfırla otomatik hesaba döner. Bitiş tarihi teslim tarihinden önce olamaz
+  - Altında yardım metni: "Mağazadan aldıysan iade hakkını kapatabilir ya da mağazanın süresini girebilirsin. Ek garanti varsa garanti tarihini değiştir."
 - **Fiş / fatura:** Kesik çizgili iki buton:
   - "Galeriden / dosyadan" → `ActivityResultContracts.OpenDocument` ile `image/*` ve `application/pdf` (e-faturalar genelde PDF gelir)
   - "Kamera ile çek" → `ActivityResultContracts.TakePicture`; çekimden önce uygulamanın kendi dizininde boş bir dosya oluşturulup `FileProvider` URI'si verilir
@@ -142,7 +148,7 @@ Aktif sekme pembe (#FF7AB8) ikon + yazı ve üstünde 28×3dp pembe çizgi; pasi
 - **Ürün fotoğrafı ekle (opsiyonel)** → aynı galeri/kamera seçimi; kartlarda ürün görseli olarak kullanılır, aynı şekilde kopyalanıp thumbnail'i üretilir
 - Altta sabit, tam genişlikte pembe **Kaydet** butonu
 
-Düzenleme modunda aynı ekran mevcut değerlerle dolu açılır. Kayıt değiştiğinde ürünün bildirim durumu (madde 7) sıfırlanır.
+Düzenleme modunda aynı ekran mevcut değerlerle dolu açılır. Bir sürenin bitiş tarihi değiştiyse o sürenin bildirim durumu (madde 7) sıfırlanır.
 
 ### 4.4 Ürün Detayı
 
@@ -150,8 +156,8 @@ Düzenleme modunda aynı ekran mevcut değerlerle dolu açılır. Kayıt değiş
 
 - Büyük ürün görseli (yoksa kategori renginde ikonlu kutu; süre dolmuşsa soluk)
 - Ürün adı, "mağaza · kategori"
-- **Süre kartı:** Etiket süre türüne göre "İade son günü" / "Garanti bitişi", altında tarih ve gün adı ("5 Ekim 2026, Pazartesi"), sağda renkli kalan süre rozeti, altında durum renginde geçen süre ilerleme çubuğu ve açıklama ("14 günlük iade süresinin 12 günü geçti.")
-- 2×2 bilgi kutuları: Satın alma, Teslim, Süre türü, Hatırlatma ("3 gün önce")
+- **Süre kartları:** Takip edilen her süre için bir kart; bitişi yakın olan üstte. Kartta etiket ("İade son günü" / "Garanti bitişi"), altında tarih ve gün adı ("5 Ekim 2026, Pazartesi"), sağda renkli kalan süre rozeti, altında durum renginde geçen süre ilerleme çubuğu ve açıklama ("14 günlük iade süresinin 12 günü geçti." / "2 yıllık garantinin 12 günü geçti."). Elle girilmiş tarihte açıklamanın sonuna "Tarih elle girildi." eklenir
+- Bilgi kutuları (yan yana): Satın alma, Teslim
 - **Fiş/fatura satırı:** Thumbnail (PDF için belge ikonu + "PDF"), dosya adı, "PDF · 1,2 MB · orijinal" ve pembe kenarlıklı **İndir** butonu. İndir, **orijinal tam çözünürlüklü dosyayı** cihazın İndirilenler klasörüne kopyalar:
   - Android 10 (API 29) ve üstü: `MediaStore.Downloads` ile, izin gerekmez
   - Android 8–9 (API 26–28): `WRITE_EXTERNAL_STORAGE` izni (`android:maxSdkVersion="28"`) istenip `Environment.DIRECTORY_DOWNLOADS`'a yazılır
@@ -163,8 +169,9 @@ Düzenleme modunda aynı ekran mevcut değerlerle dolu açılır. Kayıt değiş
 
 - Başlık "Ajanda ve Hatırlatıcılar"
 - Üstte pastel lavanta **Hatırlatma ayarı** kartı: zil ikonu, "Bitişten 3 gün önce başlar, her gün 10:00'da", koyu "Ayarla" butonu (Profil & Ayarlar'daki hatırlatma ayarlarını açar)
-- Süresi devam eden ürünlerin zaman çizelgesi, bitiş tarihine göre artan, gruplar: **Bu hafta**, **Bu ay**, **Daha sonra**
-- Her satır: solda durum renginde tarih kutusu (gün + kısaltılmış ay, örn. "5 EKİ"), ürün adı, "İade son günü · Pazartesi" / "Garanti bitişi · 2027", sağda kısa rozet. Dokunma → ürün detay
+- Süresi devam eden tüm sürelerin zaman çizelgesi, bitiş tarihine göre artan. İki süresi olan ürün çizelgede iki kez yer alır (biri iade, biri garanti). Gruplar: **Bu hafta** (0–6 gün), **Önümüzdeki 30 gün** (7–30 gün), **Daha sonra** (31+ gün); boş grup gösterilmez
+- Her satır: solda durum renginde tarih kutusu (gün + kısaltılmış ay, örn. "5 EKİ"), ürün adı, "İade son günü · Pazartesi" (30 gün içindekiler) / "Garanti bitişi · 2027" (daha sonrakiler), sağda kısa rozet. Dokunma → ürün detay
+- Hiç süresi devam eden ürün yoksa: "Yaklaşan bir bitiş tarihi yok"
 - Bildirim izni reddedilmişse en üstte uyarı kartı: "Bildirimler kapalı, hatırlatma alamazsın" + "Ayarlara git" butonu
 
 ### 4.6 Profil & Ayarlar
@@ -176,34 +183,49 @@ Düzenleme modunda aynı ekran mevcut değerlerle dolu açılır. Kayıt değiş
 
 ## 5. Veri modeli
 
+Bir ürün iki süreyi (iade hakkı ve garanti) birlikte taşıyabilir. Kod iki katmana ayrılır: Android'den bağımsız alan modeli (`domain`) ve Room tablosu (`data`).
+
 ```kotlin
-@Entity(tableName = "products")
+// domain
 data class Product(
-    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val id: Long = 0,
     val name: String,
     val store: String,
     val category: Category,
     val purchaseDate: LocalDate,
-    val deliveryDate: LocalDate,              // boş bırakılırsa purchaseDate ile aynı kaydedilir
-    val durationType: DurationType,
-    val manualEndDate: LocalDate? = null,     // kullanıcı elle girdiyse
-    val receiptPath: String? = null,          // filesDir/receipts/... orijinal dosya
-    val receiptThumbPath: String? = null,     // filesDir/thumbs/... önizleme
-    val receiptFileName: String? = null,      // kullanıcıya gösterilen ve indirmede kullanılan ad
-    val receiptMimeType: String? = null,      // image/jpeg, application/pdf ...
-    val receiptSizeBytes: Long? = null,
-    val photoPath: String? = null,            // ürün fotoğrafı (opsiyonel)
-    val photoThumbPath: String? = null,
-    val lastReminderDate: LocalDate? = null,  // aynı gün iki kez hatırlatma gönderilmesin
-    val expiredNotified: Boolean = false,     // "süresi doldu" bildirimi bir kez gönderilsin
-    val createdAt: Long = System.currentTimeMillis()
+    val deliveryDate: LocalDate,             // boş bırakılırsa purchaseDate ile aynı kaydedilir
+    val tracksReturn: Boolean,               // iade hakkı takip ediliyor mu
+    val tracksWarranty: Boolean,             // garanti takip ediliyor mu (en az biri true)
+    val returnEndOverride: LocalDate? = null,   // elle girilen iade son günü
+    val warrantyEndOverride: LocalDate? = null, // elle girilen garanti bitişi
+    val receipt: Attachment? = null,
+    val photo: Photo? = null,
+    val createdAt: Long = 0
 )
+
+data class Attachment(          // fiş / fatura
+    val path: String,           // filesDir/receipts/... orijinal dosya
+    val thumbPath: String?,     // filesDir/thumbs/... önizleme
+    val fileName: String,       // kullanıcıya gösterilen ve indirmede kullanılan ad
+    val mimeType: String,       // image/jpeg, application/pdf ...
+    val sizeBytes: Long
+)
+
+data class Photo(val path: String, val thumbPath: String?)
 
 enum class Category { ELEKTRONIK, BEYAZ_ESYA, GIYIM, DIGER }
 enum class DurationType { IADE, GARANTI }
 enum class Urgency { SUCCESS, WARNING, DANGER, EXPIRED }
 ```
 
+Room tablosu (`products`) aynı alanları düz sütunlar olarak tutar (`receiptPath`, `receiptThumbPath`, `receiptFileName`, `receiptMimeType`, `receiptSizeBytes`, `photoPath`, `photoThumbPath`) ve bildirim durumu için süre başına iki alan daha ekler:
+
+| Sütun | Anlamı |
+|---|---|
+| `returnLastReminder`, `warrantyLastReminder` | O süre için son hatırlatmanın gönderildiği gün (aynı gün iki kez gönderilmesin) |
+| `returnExpiredNotified`, `warrantyExpiredNotified` | "Süresi doldu" bildirimi gönderildi mi (bir kez gönderilsin) |
+
+- Ürün düzenlenip kaydedildiğinde bir sürenin bitiş tarihi değiştiyse o sürenin bildirim alanları sıfırlanır; değişmediyse korunur
 - `LocalDate` alanları için Room `TypeConverter` yazılır (`toEpochDay()` ↔ `LocalDate.ofEpochDay()`); enum'lar isimleriyle saklanır
 - Dosya alanlarında içerik URI'si değil, uygulamanın kendi dizinindeki dosya yolu tutulur (dış URI'lere erişim izni zamanla kaybolur)
 - Kullanıcı adı, profil fotoğrafı yolu, hatırlatma başlangıcı (gün) ve bildirim saati DataStore'da (Preferences) tutulur
@@ -213,18 +235,32 @@ enum class Urgency { SUCCESS, WARNING, DANGER, EXPIRED }
 Yasal süreler teslim tarihinden başlar (madde 8), bu yüzden hesaplama `deliveryDate` üzerinden yapılır.
 
 ```kotlin
-fun calculateEndDate(product: Product): LocalDate {
-    product.manualEndDate?.let { return it }
-    return when (product.durationType) {
-        DurationType.IADE -> product.deliveryDate.plusDays(14)
-        DurationType.GARANTI -> product.deliveryDate.plusYears(2)
-    }
+data class Deadline(
+    val type: DurationType,
+    val startDate: LocalDate,   // teslim tarihi
+    val endDate: LocalDate,
+    val isManual: Boolean       // tarih elle mi girildi
+)
+
+fun Product.autoEndDate(type: DurationType): LocalDate = when (type) {
+    DurationType.IADE -> deliveryDate.plusDays(14)
+    DurationType.GARANTI -> deliveryDate.plusYears(2)
 }
 
-fun daysRemaining(endDate: LocalDate, today: LocalDate = LocalDate.now()): Long =
+// Takip edilen süreler: iade ve/veya garanti
+fun Product.deadlines(): List<Deadline>
+
+// Öne çıkan süre: süresi devam edenlerden bitişi en yakın olanı; hepsi dolmuşsa en son dolanı.
+// Kartlardaki rozet, tarih ve sıralama bu süreye göre yapılır.
+fun Product.primaryDeadline(today: LocalDate): Deadline?
+
+// Ürün, takip ettiği sürelerin hepsi dolduğunda "süresi dolmuş" sayılır
+fun Product.isExpired(today: LocalDate): Boolean
+
+fun daysRemaining(endDate: LocalDate, today: LocalDate): Long =
     ChronoUnit.DAYS.between(today, endDate)
 
-fun urgencyLevel(days: Long): Urgency = when {
+fun urgencyOf(days: Long): Urgency = when {
     days < 0 -> Urgency.EXPIRED
     days <= 3 -> Urgency.DANGER
     days < 14 -> Urgency.WARNING
@@ -232,7 +268,7 @@ fun urgencyLevel(days: Long): Urgency = when {
 }
 
 // Rozet metni: "Bugün son gün", "1 gün kaldı" … "60 gün kaldı", sonra "2 ay kaldı", "1 yıl 3 ay kaldı", "Süre doldu"
-fun remainingLabel(endDate: LocalDate, today: LocalDate = LocalDate.now()): String {
+fun remainingLabel(endDate: LocalDate, today: LocalDate): String {
     val days = daysRemaining(endDate, today)
     if (days < 0) return "Süre doldu"
     if (days == 0L) return "Bugün son gün"
@@ -246,26 +282,26 @@ fun remainingLabel(endDate: LocalDate, today: LocalDate = LocalDate.now()): Stri
 }
 ```
 
-Liste ekranındaki kısa rozetlerde aynı metin "kaldı" eki olmadan kullanılır ("2 gün", "2 ay").
+Liste ekranındaki kısa rozetlerde aynı metin "kaldı" eki olmadan kullanılır ("2 gün", "2 ay", "Bugün"). Bu fonksiyonların tamamı `domain` paketindedir, Android'e bağımlı değildir ve birim testleriyle doğrulanır.
 
 ## 7. Bildirim sistemi
 
 - **Tek bir günlük iş:** WorkManager ile `PeriodicWorkRequest` (24 saat), benzersiz adla (`enqueueUniquePeriodicWork`, `ExistingPeriodicWorkPolicy.UPDATE`) zamanlanır ve ilk çalışması ayarlardaki bildirim saatine (varsayılan 10:00) denk gelecek şekilde `initialDelay` verilir. Her ürün için ayrı iş zamanlanmaz; iş çalışınca tüm ürünleri tek sorguda kontrol eder. Uygulama açılışında ve bildirim saati değiştiğinde yeniden zamanlanır
-- Her ürün için `days = daysRemaining(...)` hesaplanır ve `lastReminderDate` bugün değilse:
+- Her ürünün takip edilen **her süresi ayrı ayrı** kontrol edilir. `days = daysRemaining(...)` hesaplanır ve o sürenin son hatırlatma günü bugün değilse:
   - `1 ≤ days ≤ hatırlatma başlangıcı` (varsayılan 3): "{ürün adı} için {İade hakkı/Garanti} süresinin bitmesine {days} gün kaldı"
   - `days == 0`: "{ürün adı} için {İade hakkı/Garanti} süresi bugün doluyor"
-  - Gönderildikten sonra `lastReminderDate = bugün` yazılır (iş aynı gün iki kez çalışırsa tekrar gönderilmez)
-- `days < 0` ve `expiredNotified == false`: "{ürün adı} için {İade hakkı/Garanti} süresi doldu" bir kez gönderilir, `expiredNotified = true` yazılır. Kullanıcı bitiş tarihini ileri alırsa bu alan sıfırlanır
+  - Gönderildikten sonra o sürenin son hatırlatma günü bugün olarak yazılır (iş aynı gün iki kez çalışırsa tekrar gönderilmez)
+- `days < 0` ve o süre için "süresi doldu" bildirimi gönderilmediyse: "{ürün adı} için {İade hakkı/Garanti} süresi doldu" bir kez gönderilir ve işaretlenir. Kullanıcı bitiş tarihini ileri alırsa işaret sıfırlanır
 - Telefon birkaç gün kapalı kaldıysa iş açılışta bir kez çalışır ve yalnızca güncel durumu bildirir; kaçırılan günler için geriye dönük bildirim gönderilmez
-- Bildirime dokunma ilgili ürünün detay ekranını açar (bildirim id'si = ürün id'si, böylece aynı ürünün eski bildirimi güncellenir)
+- Bildirime dokunma ilgili ürünün detay ekranını açar. Bildirim id'si ürün id'si ve süre türünden türetilir (`id * 2 + 0/1`), böylece aynı sürenin eski bildirimi güncellenir, iki süre birbirini ezmez
 - Android 13+ için `POST_NOTIFICATIONS` izni ilk ürün kaydedildiğinde istenir; reddedilirse uygulama çalışmaya devam eder, Ajanda'da uyarı kartı gösterilir
 
 ## 8. Türkiye tüketici hukuku bağlamı
 
 - Mesafeli satışta (online alışveriş) yasal cayma hakkı: malın **teslim tarihinden** itibaren **14 gün**
 - Yasal garanti süresi: malın **teslim tarihinden** itibaren en az **2 yıl**
-- Mağazadan (yüz yüze) alışverişte yasal cayma hakkı yoktur; iade mağazanın kendi politikasına bağlıdır. Bu durumda kullanıcı mağazanın verdiği iade süresini opsiyonel bitiş tarihi alanına girer
-- Bu süreler varsayılandır; ek garanti veya farklı iade süresi için kullanıcı madde 4.3'teki opsiyonel bitiş tarihi alanını kullanır
+- Mağazadan (yüz yüze) alışverişte yasal cayma hakkı yoktur; iade mağazanın kendi politikasına bağlıdır. Bu durumda kullanıcı iade hakkı takibini kapatır ya da mağazanın verdiği iade son gününü elle girer
+- Bu süreler varsayılandır; ek garanti veya farklı iade süresi için kullanıcı madde 4.3'te ilgili sürenin tarihini elle değiştirir
 
 ## 9. Performans ve kararlılık
 
