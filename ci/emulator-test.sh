@@ -24,11 +24,21 @@ if ! grep -q "OK (" "$OUT/instrumentation.txt"; then
   echo "::error::Ekran turu testi başarısız"
   status=1
 fi
+adb shell am instrument -w -r \
+  -e class "$PKG.FeaturesTest" \
+  "$PKG.test/androidx.test.runner.AndroidJUnitRunner" | tee "$OUT/instrumentation-features.txt"
+if ! grep -q "OK (" "$OUT/instrumentation-features.txt"; then
+  echo "::error::Dosya/bildirim testleri başarısız"
+  status=1
+fi
 adb logcat -d > "$OUT/logcat-debug.txt"
 
 mkdir -p "$OUT/screenshots"
 adb exec-out run-as "$PKG" tar cf - -C files/screenshots . | tar xf - -C "$OUT/screenshots" || true
-adb exec-out screencap -p > "$OUT/screenshots/zz-son-durum.png" || true
+adb shell cmd statusbar expand-notifications || true
+sleep 3
+adb exec-out screencap -p > "$OUT/screenshots/10-bildirim.png" || true
+adb shell cmd statusbar collapse || true
 
 # Release APK (R8 ile küçültülmüş, test anahtarıyla imzalı) açılış kontrolü
 adb uninstall "$PKG" || true

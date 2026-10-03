@@ -70,7 +70,13 @@ class ScreenshotTourTest {
                 tracksReturn = ret,
                 tracksWarranty = war,
             )
-        repo.save(product("Kablosuz Kulaklık", "Hepsiburada", Category.ELEKTRONIK, today.minusDays(12), ret = true, war = true))
+        val receipt = app.container.files.importReceipt(
+            TestFiles.uri(app, TestFiles.pdf(app, "hepsiburada-fatura.pdf"))
+        )
+        repo.save(
+            product("Kablosuz Kulaklık", "Hepsiburada", Category.ELEKTRONIK, today.minusDays(12), ret = true, war = true)
+                .copy(receipt = receipt)
+        )
         repo.save(product("Kışlık Mont", "Trendyol", Category.GIYIM, today.minusDays(7), ret = true, war = false))
         repo.save(product("Akıllı Saat", "Teknosa", Category.ELEKTRONIK, today.plusDays(70).minusYears(2), ret = false, war = true))
         repo.save(product("Akıllı Telefon", "n11", Category.ELEKTRONIK, today.plusMonths(9).minusYears(2), ret = false, war = true))
@@ -94,6 +100,9 @@ class ScreenshotTourTest {
         rule.onNodeWithText("Kablosuz Kulaklık").performClick()
         waitForText("İade son günü")
         shot("03-detay")
+        rule.onNodeWithText("İndir", substring = true).performScrollTo().performClick()
+        waitForText("Fatura İndirilenler klasörüne kaydedildi")
+        shot("03b-fatura-indirildi")
 
         rule.onNodeWithContentDescription("Düzenle").performClick()
         waitForText("Ürünü Düzenle")
