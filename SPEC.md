@@ -73,7 +73,16 @@ Poppins (Google Fonts, Compose'da downloadable font olarak):
 
 ## 3. İkon ve logo
 
-Motif: kalkan (koruma/garanti) içinde onay işareti (takip edildi/güvence altında). Koyu mor (#2A1747) yuvarlak köşeli kare zemin üzerinde pembe (#FF7AB8) dolu kalkan, kalkanın içinde koyu (#2A0F3D) onay işareti. Adaptive icon: arka plan katmanı düz #2A1747, ön plan katmanı kalkan + onay işareti.
+Referans: `design/logo-referans.jpg` (orijinal), `design/logo-rozet.png` (yalnızca rozet, şeffaf arka planlı kesim).
+
+- **Motif:** Kalite/garanti rozeti (tırtıklı kenarlı madalyon ve altında iki kurdele) ve rozetin önünde, sağ üste taşan büyük onay işareti. Rozet ve onay işareti lavanta-pembe tonlarında (#C9B5F7 → #F2C6E6), onay işaretinin yüzü beyaza yakın
+- **Zemin:** Koyu mor daire (#2B1B4F → #3D2470 hafif geçişli), dışında lavanta → pembe parlak halka
+- **Yazı (wordmark):** "Garantiledim", kalın geometrik sans (Poppins 700 ile uyumlu). Açık zeminde #1E1838, koyu zeminde #F7F2FF
+- **Kullanım yerleri:**
+  - Uygulama ikonu (launcher): Adaptive icon; arka plan katmanı düz #2A1747, ön plan katmanı rozet dairesi (66dp güvenli alan içinde)
+  - Açılış ekranı: Android 12+ SplashScreen API ile #1C0D33 zemin üzerinde rozet; uygulama içi açılışta rozetin altında "Garantiledim" yazısı ve "Garanti sürelerini takipte kal!"
+  - Play Store ikonu: 512×512 PNG
+- **Gerekli dosya:** Play Store ve launcher için logonun en az 1024×1024 yüksek çözünürlüklü ya da vektör (SVG) sürümü gerekir. Mevcut referans görsel 512×279 boyutunda; içindeki rozet yaklaşık 160 piksel, bu yüzden ikon olarak doğrudan kullanılırsa bulanık görünür
 
 ## 4. Ekranlar
 
