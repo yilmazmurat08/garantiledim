@@ -110,8 +110,10 @@ private val colorScheme = darkColorScheme(
     surfaceContainer = GColors.Surface,
     surfaceContainerHigh = GColors.Surface,
     surfaceContainerHighest = GColors.SurfaceHigh,
-    inverseSurface = GColors.Text,
-    inverseOnSurface = GColors.OnPastel,
+    // Snackbar gibi bilgi mesajları: koyu yüzey, açık metin, pembe eylem
+    inverseSurface = GColors.SurfaceHigh,
+    inverseOnSurface = GColors.Text,
+    inversePrimary = GColors.Pink,
     outline = GColors.Outline,
     outlineVariant = GColors.Outline,
     error = GColors.Danger,

@@ -11,6 +11,10 @@ Her push'ta GitHub Actions uygulamayı derler, birim testlerini çalıştırır,
 
 https://github.com/yilmazmurat08/garantiledim/releases/download/test-latest/garantiledim.apk
 
+Telefona kurmak için bağlantıyı telefonda aç, indirilen dosyaya dokun; Android "bilinmeyen uygulamaları yükleme" izni isterse tarayıcıya bir kez izin ver. Yeni sürümler eskisinin üzerine kurulur, veriler korunur.
+
+![Ekran görüntüleri](design/ekran-goruntuleri.png)
+
 Bu APK test anahtarıyla (`app/signing/test.keystore`) imzalıdır ve yalnızca telefona doğrudan kurulum içindir. Play Store sürümü ayrı, gizli bir yükleme anahtarıyla imzalanacak; o anahtar bu depoya konmaz.
 
 Ekran görüntüleri ve test çıktıları her derlemeden sonra `ci-screenshots` dalına yazılır.
@@ -34,6 +38,8 @@ app/src/main/java/com/garantiledim/app/
 - [x] Bir üründe iade ve garanti süresini birlikte takip etme
 - [x] Fiş/fatura (fotoğraf veya PDF) ekleme, önizleme ve İndirilenler'e kaydetme
 - [x] Bildirimler: bitişe 3 gün kala her gün, son gün ve süre dolunca (WorkManager)
-- [ ] Premium (deneme, abonelik, yedekleme)
+- [x] Emülatörde otomatik testler: tüm ekranlar, fiş/fatura, indirme, bildirim
+- [ ] Play Store: yükleme anahtarı, AAB, mağaza kaydı
+- [ ] Premium (deneme, abonelik, yedekleme) — Google Play Faturalandırma, Play Console kurulumuyla birlikte
 
 Yazı tipi: Poppins, SIL Open Font License 1.1 ([`licenses/Poppins-OFL.txt`](licenses/Poppins-OFL.txt)).
