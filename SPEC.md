@@ -179,7 +179,8 @@ Düzenleme modunda aynı ekran mevcut değerlerle dolu açılır. Bir sürenin b
 - **Profil kartı:** Fotoğraf (pembe halkalı), ad, "Bilgilerin sadece bu cihazda saklanır", düzenle butonu (ad ve fotoğraf). Hesap yoktur; ad ve fotoğraf yalnızca karşılama için kullanılır
 - **Hatırlatmalar:** Hatırlatma başlangıcı (varsayılan "Bitişten 3 gün önce"), Bildirim saati (varsayılan 10:00), Bildirim izni durumu (Açık yeşil / Kapalı pembe, kapalıysa dokununca sistem ayarına gider)
 - **Varsayılan süreler:** İade hakkı 14 gün, Garanti 2 yıl (bilgi amaçlı)
-- **Diğer:** Yedekleme ve Premium ("Yakında" etiketi; madde 10'da tasarlanacak), Hakkında (sürüm)
+- **Yasal:** "Gizlilik Politikası" ve "Kullanım Koşulları" ayrı satırlar; her biri kendi ekranında açılır (madde 11)
+- **Diğer:** Bize yazın (iletişim e-postası, e-posta uygulamasını açar), Hakkında (sürüm). Premium ve yedekleme hazır olana kadar menüde gösterilmez (Google Play'in "çalışmayan özellik" kuralı)
 
 ## 5. Veri modeli
 
@@ -346,3 +347,12 @@ Scroll akıcılığı için:
 Reklamsız, sade abonelik modeli önerilir — güven odaklı bu tür bir uygulamada reklam marka algısını zedeler. TL'deki enflasyon nedeniyle fiyatların periyodik gözden geçirilmesi gerekir.
 
 **Play Store uyumluluğu:** Google Play, deneme süreli aboneliklerde kullanıcı onay vermeden önce süreyi, ücreti, neyin dahil olduğunu ve otomatik ücretli aboneliğe ne zaman geçeceğini açıkça göstermeyi şart koşuyor; aksi halde uygulama reddedilebilir. Yükseltme/deneme başlatma ekranında bu bilgiler net görünmeli.
+
+## 11. Gizlilik politikası ve kullanım koşulları
+
+- Metinler tek kaynaktan gelir: `app/src/main/assets/legal/gizlilik-politikasi.md` ve `kullanim-kosullari.md`. Uygulama içindeki ekranlar ve Play Console'a verilecek herkese açık bağlantı aynı dosyaları gösterir
+- Geliştirici adı "Garantiledim", iletişim e-postası yilmazmurat08@gmail.com
+- Gizlilik politikası uygulamanın gerçek davranışını anlatır: hesap yok, internet izni yok, veriler yalnızca cihazda; izinler (bildirim, Android 9 ve öncesinde depolama, WorkManager'ın arka plan izinleri) ve nedenleri; İndirilenler'e aktarılan kopyalar; Android otomatik yedeklemesi; KVKK; silme yolları
+- Kullanım koşulları: hukuki tavsiye olmadığı (6502 sayılı Kanun'a dayalı varsayılan süreler), bildirimlerin garanti edilmediği, verilerin cihazda tutulduğu ve yedek sorumluluğu, sorumluluğun sınırlandırılması, uygulanacak hukuk
+- Uygulamaya internet, analiz ya da ödeme özelliği eklendiğinde iki metin de güncellenmeli ve yürürlük tarihi değiştirilmeli
+

@@ -58,6 +58,8 @@ import com.garantiledim.app.ui.components.GIcon
 import com.garantiledim.app.ui.detail.ProductDetailScreen
 import com.garantiledim.app.ui.edit.EditProductScreen
 import com.garantiledim.app.ui.home.HomeScreen
+import com.garantiledim.app.ui.legal.LegalDoc
+import com.garantiledim.app.ui.legal.LegalScreen
 import com.garantiledim.app.ui.list.ProductListScreen
 import com.garantiledim.app.ui.profile.ProfileScreen
 import com.garantiledim.app.ui.theme.GColors
@@ -77,6 +79,8 @@ private object Routes {
     const val DETAIL = "detail/{id}"
     fun edit(id: Long? = null) = if (id == null) "edit" else "edit?id=$id"
     fun detail(id: Long) = "detail/$id"
+    const val LEGAL = "legal/{doc}"
+    fun legal(doc: LegalDoc) = "legal/${doc.route}"
 }
 
 const val NEW_PRODUCT_ID = -1L
@@ -153,7 +157,15 @@ fun AppRoot(openProduct: MutableStateFlow<Long?>) {
                 )
             }
             composable(Tab.PROFILE.route) {
-                ProfileScreen()
+                ProfileScreen(onOpenLegal = { navController.navigate(Routes.legal(it)) })
+            }
+            composable(
+                route = Routes.LEGAL,
+                arguments = listOf(navArgument("doc") { type = NavType.StringType }),
+            ) { entry ->
+                val doc = LegalDoc.entries.firstOrNull { it.route == entry.arguments?.getString("doc") }
+                    ?: LegalDoc.PRIVACY
+                LegalScreen(doc = doc, onBack = { navController.popBackStack() })
             }
             composable(
                 route = Routes.EDIT,

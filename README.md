@@ -21,6 +21,13 @@ Ekran görüntüleri ve test çıktıları her derlemeden sonra `ci-screenshots`
 
 Yerelde: `./gradlew testDebugUnitTest assembleRelease` (Android SDK gerekir). En düşük sürüm Android 8.0 (API 26).
 
+## Gizlilik politikası ve kullanım koşulları
+
+Play Console'a verilecek herkese açık bağlantılar (uygulama içindeki metinlerle aynı dosyalar):
+
+- Gizlilik politikası: https://github.com/yilmazmurat08/garantiledim/blob/ccr-38695d75-1p1qgi/app/src/main/assets/legal/gizlilik-politikasi.md
+- Kullanım koşulları: https://github.com/yilmazmurat08/garantiledim/blob/ccr-38695d75-1p1qgi/app/src/main/assets/legal/kullanim-kosullari.md
+
 ## Yapı
 
 ```
@@ -39,6 +46,7 @@ app/src/main/java/com/garantiledim/app/
 - [x] Fiş/fatura (fotoğraf veya PDF) ekleme, önizleme ve İndirilenler'e kaydetme
 - [x] Bildirimler: bitişe 3 gün kala her gün, son gün ve süre dolunca (WorkManager)
 - [x] Emülatörde otomatik testler: tüm ekranlar, fiş/fatura, indirme, bildirim
+- [x] Gizlilik politikası ve kullanım koşulları (uygulamada Profil & Ayarlar > Yasal)
 - [ ] Play Store: yükleme anahtarı, AAB, mağaza kaydı
 - [ ] Premium (deneme, abonelik, yedekleme) — Google Play Faturalandırma, Play Console kurulumuyla birlikte
 

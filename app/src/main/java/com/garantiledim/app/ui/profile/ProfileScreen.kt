@@ -44,6 +44,7 @@ import com.garantiledim.app.AppContainer
 import com.garantiledim.app.BuildConfig
 import com.garantiledim.app.R
 import com.garantiledim.app.data.UserSettings
+import com.garantiledim.app.domain.CONTACT_EMAIL
 import com.garantiledim.app.domain.Photo
 import com.garantiledim.app.ui.appViewModelFactory
 import com.garantiledim.app.ui.components.Avatar
@@ -54,6 +55,8 @@ import com.garantiledim.app.ui.components.TimePickerSheet
 import com.garantiledim.app.ui.components.openNotificationSettings
 import com.garantiledim.app.ui.components.rememberNotificationsEnabled
 import com.garantiledim.app.ui.components.surfaceCard
+import com.garantiledim.app.ui.legal.LegalDoc
+import com.garantiledim.app.ui.legal.sendContactEmail
 import com.garantiledim.app.ui.theme.GColors
 import com.garantiledim.app.ui.theme.GShapes
 import com.garantiledim.app.ui.theme.GType
@@ -103,6 +106,7 @@ private val reminderOptions = listOf(1, 2, 3, 5, 7)
 
 @Composable
 fun ProfileScreen(
+    onOpenLegal: (LegalDoc) -> Unit,
     viewModel: ProfileViewModel = viewModel(factory = appViewModelFactory { c, _ -> ProfileViewModel(c) }),
 ) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
@@ -181,8 +185,18 @@ fun ProfileScreen(
             SettingsRow(title = "Garanti", trailing = "2 yıl")
         }
 
+        SettingsGroup("Yasal") {
+            SettingsRow(title = LegalDoc.PRIVACY.title, onClick = { onOpenLegal(LegalDoc.PRIVACY) })
+            HorizontalDivider(color = GColors.SurfaceHigh)
+            SettingsRow(title = LegalDoc.TERMS.title, onClick = { onOpenLegal(LegalDoc.TERMS) })
+        }
+
         SettingsGroup("Diğer") {
-            SettingsRow(title = "Yedekleme ve Premium", badge = "Yakında")
+            SettingsRow(
+                title = "Bize yazın",
+                value = CONTACT_EMAIL,
+                onClick = { sendContactEmail(context, "Garantiledim") },
+            )
             HorizontalDivider(color = GColors.SurfaceHigh)
             SettingsRow(title = "Hakkında", trailing = "Sürüm ${BuildConfig.VERSION_NAME}")
         }

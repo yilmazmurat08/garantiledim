@@ -123,6 +123,17 @@ class ScreenshotTourTest {
         waitForText("Hatırlatma başlangıcı")
         shot("07-profil")
 
+        rule.onNodeWithText("Gizlilik Politikası").performScrollTo().performClick()
+        waitForText("Kısaca")
+        shot("07b-gizlilik-politikasi")
+        rule.onNodeWithContentDescription("Geri").performClick()
+        waitForText("Hatırlatma başlangıcı")
+        rule.onNodeWithText("Kullanım Koşulları").performScrollTo().performClick()
+        waitForText("Hukuki tavsiye değildir")
+        shot("07c-kullanim-kosullari")
+        rule.onNodeWithContentDescription("Geri").performClick()
+        waitForText("Hatırlatma başlangıcı")
+
         rule.onNodeWithText("Ana Sayfa").performClick()
         waitForText("Günün Garantileri")
         rule.onNodeWithText("Yeni Garanti Ekle").performClick()
