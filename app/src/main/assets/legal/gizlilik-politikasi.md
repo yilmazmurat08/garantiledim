@@ -2,7 +2,7 @@
 
 Yürürlük tarihi: 6 Ekim 2026
 
-Bu politika, Garantiledim Android uygulamasının ("Uygulama") bilgilerini nasıl işlediğini açıklar. Uygulama Garantiledim tarafından geliştirilmiştir. Sorularını yilmazmurat08@gmail.com adresine gönderebilirsin.
+Bu politika, Garantiledim Android uygulamasının ("Uygulama") bilgilerini nasıl işlediğini açıklar. Uygulama Lusnika tarafından geliştirilmiştir. Sorularını yilmazmurat08@gmail.com adresine gönderebilirsin.
 
 ## Kısaca
 
@@ -66,5 +66,5 @@ Bu politikayı güncelleyebiliriz. Örneğin ileride isteğe bağlı bulut yedek
 
 ## İletişim
 
-Garantiledim
+Lusnika
 E-posta: yilmazmurat08@gmail.com

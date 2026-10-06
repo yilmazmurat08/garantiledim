@@ -2,7 +2,7 @@
 
 Yürürlük tarihi: 6 Ekim 2026
 
-Bu koşullar, Garantiledim tarafından geliştirilen Garantiledim Android uygulamasının ("Uygulama") kullanımını düzenler. Uygulamayı kullanarak bu koşulları kabul etmiş olursun.
+Bu koşullar, Lusnika tarafından geliştirilen Garantiledim Android uygulamasının ("Uygulama") kullanımını düzenler. Uygulamayı kullanarak bu koşulları kabul etmiş olursun.
 
 ## Uygulama ne yapar
 
@@ -28,11 +28,11 @@ Uygulamaya eklediğin fiş, fatura, fotoğraf ve bilgiler sana aittir. Bunları 
 
 ## Fikri mülkiyet
 
-Uygulamanın adı, logosu, tasarımı ve yazılımı Garantiledim'e aittir. Uygulamayı kişisel kullanım için kullanabilirsin; kopyalayamaz, değiştirerek dağıtamaz ya da tersine mühendislik yapamazsın (yasaların izin verdiği durumlar hariç). Uygulamada kullanılan Poppins yazı tipi SIL Open Font License 1.1 lisansı ile kullanılmaktadır.
+Uygulamanın adı, logosu, tasarımı ve yazılımı Lusnika'ya aittir. Uygulamayı kişisel kullanım için kullanabilirsin; kopyalayamaz, değiştirerek dağıtamaz ya da tersine mühendislik yapamazsın (yasaların izin verdiği durumlar hariç). Uygulamada kullanılan Poppins yazı tipi SIL Open Font License 1.1 lisansı ile kullanılmaktadır.
 
 ## Sorumluluğun sınırlandırılması
 
-Uygulama "olduğu gibi" sunulur. Yürürlükteki mevzuatın izin verdiği ölçüde; kaçırılan bir iade ya da garanti süresi, yanlış girilen tarih, ulaşmayan bir bildirim ya da kaybolan veriler nedeniyle doğabilecek zararlardan Garantiledim sorumlu tutulamaz. Bu madde, tüketici olarak kanundan doğan ve sözleşmeyle sınırlanamayan haklarını etkilemez.
+Uygulama "olduğu gibi" sunulur. Yürürlükteki mevzuatın izin verdiği ölçüde; kaçırılan bir iade ya da garanti süresi, yanlış girilen tarih, ulaşmayan bir bildirim ya da kaybolan veriler nedeniyle doğabilecek zararlardan Lusnika sorumlu tutulamaz. Bu madde, tüketici olarak kanundan doğan ve sözleşmeyle sınırlanamayan haklarını etkilemez.
 
 ## Ücretli özellikler
 
@@ -48,5 +48,5 @@ Bu koşullar Türkiye Cumhuriyeti kanunlarına tabidir.
 
 ## İletişim
 
-Garantiledim
+Lusnika
 E-posta: yilmazmurat08@gmail.com

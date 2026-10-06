@@ -1,5 +1,8 @@
 package com.garantiledim.app.domain
 
+/** Politikalarda geliştirici olarak görünen ad (uygulamanın adı Garantiledim). */
+const val DEVELOPER_NAME = "Lusnika"
+
 /** Kullanıcıların geliştiriciye ulaşacağı adres; politikalarda ve uygulama içinde kullanılır. */
 const val CONTACT_EMAIL = "yilmazmurat08@gmail.com"
 

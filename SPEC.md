@@ -351,7 +351,7 @@ Reklamsız, sade abonelik modeli önerilir — güven odaklı bu tür bir uygula
 ## 11. Gizlilik politikası ve kullanım koşulları
 
 - Metinler tek kaynaktan gelir: `app/src/main/assets/legal/gizlilik-politikasi.md` ve `kullanim-kosullari.md`. Uygulama içindeki ekranlar ve Play Console'a verilecek herkese açık bağlantı aynı dosyaları gösterir
-- Geliştirici adı "Garantiledim", iletişim e-postası yilmazmurat08@gmail.com
+- Geliştirici adı "Lusnika" (uygulamanın adı Garantiledim), iletişim e-postası yilmazmurat08@gmail.com
 - Gizlilik politikası uygulamanın gerçek davranışını anlatır: hesap yok, internet izni yok, veriler yalnızca cihazda; izinler (bildirim, Android 9 ve öncesinde depolama, WorkManager'ın arka plan izinleri) ve nedenleri; İndirilenler'e aktarılan kopyalar; Android otomatik yedeklemesi; KVKK; silme yolları
 - Kullanım koşulları: hukuki tavsiye olmadığı (6502 sayılı Kanun'a dayalı varsayılan süreler), bildirimlerin garanti edilmediği, verilerin cihazda tutulduğu ve yedek sorumluluğu, sorumluluğun sınırlandırılması, uygulanacak hukuk
 - Uygulamaya internet, analiz ya da ödeme özelliği eklendiğinde iki metin de güncellenmeli ve yürürlük tarihi değiştirilmeli

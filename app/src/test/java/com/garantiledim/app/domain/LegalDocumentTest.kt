@@ -47,6 +47,7 @@ class LegalDocumentTest {
         listOf("Kısaca", "İzinler ve neden kullanıldıkları", "Verilerin saklanması ve silinmesi", "İletişim")
             .forEach { assertTrue("Eksik bölüm: $it", it in headings) }
         assertTrue(text.contains(CONTACT_EMAIL))
+        assertTrue(text.contains("$DEVELOPER_NAME tarafından geliştirilmiştir"))
         assertFalse(text.contains("{{"))
     }
 
@@ -59,5 +60,7 @@ class LegalDocumentTest {
         listOf("Hukuki tavsiye değildir", "Sorumluluğun sınırlandırılması", "Uygulanacak hukuk", "İletişim")
             .forEach { assertTrue("Eksik bölüm: $it", it in headings) }
         assertTrue(text.contains(CONTACT_EMAIL))
+        assertTrue(text.contains("$DEVELOPER_NAME tarafından geliştirilen"))
+        assertFalse("Geliştirici adı Garantiledim olarak kalmamalı", text.contains("Garantiledim sorumlu"))
     }
 }
