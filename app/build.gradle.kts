@@ -7,8 +7,9 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
-// CI'da her derlemenin numarası; telefona yeni sürüm eskisinin üzerine kurulabilsin diye artar.
-val buildNumber = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
+// Derleme numarası (CI'da çalışma numarası, yerelde BUILD_NUMBER); telefona yeni sürüm
+// eskisinin üzerine kurulabilsin diye artar.
+val buildNumber = (System.getenv("GITHUB_RUN_NUMBER") ?: System.getenv("BUILD_NUMBER"))?.toIntOrNull() ?: 1
 
 android {
     namespace = "com.garantiledim.app"
