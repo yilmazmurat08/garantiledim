@@ -9,6 +9,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
 import androidx.work.ListenableWorker
+import androidx.work.WorkManager
 import androidx.work.testing.TestListenableWorkerBuilder
 import com.garantiledim.app.domain.Category
 import com.garantiledim.app.domain.Product
@@ -76,6 +77,11 @@ class FeaturesTest {
 
     @Test
     fun hatirlatmaBildirimiGonderilirAyniGunTekrarlanmaz() = runBlocking {
+        // Uygulamanın açılışta başlattığı "kaçırılan kontrol" işi bu testle aynı anda çalışmasın.
+        WorkManager.getInstance(app).cancelAllWork().result.get()
+        val manager = app.getSystemService(NotificationManager::class.java)
+        manager.cancelAll()
+
         val today = LocalDate.now()
         val id = app.container.products.save(
             Product(
@@ -88,24 +94,32 @@ class FeaturesTest {
                 tracksWarranty = false,
             )
         )
-        val manager = app.getSystemService(NotificationManager::class.java)
         fun ourTexts() = manager.activeNotifications.mapNotNull {
             it.notification.extras.getCharSequence(Notification.EXTRA_TEXT)?.toString()
         }.filter { it.startsWith("Bildirim Testi") }
 
+        // Android bildirimleri sıraya alıp ayrı bir iş parçacığında işler; görünene kadar bekle.
+        fun awaitTexts(count: Int): List<String> {
+            val deadline = System.currentTimeMillis() + 5_000
+            while (ourTexts().size != count && System.currentTimeMillis() < deadline) Thread.sleep(100)
+            return ourTexts()
+        }
+
         val first = TestListenableWorkerBuilder<ReminderWorker>(app).build().doWork()
         assertEquals(ListenableWorker.Result.success(), first)
-        assertEquals(listOf("Bildirim Testi için İade hakkı süresinin bitmesine 2 gün kaldı"), ourTexts())
+        assertEquals(listOf("Bildirim Testi için İade hakkı süresinin bitmesine 2 gün kaldı"), awaitTexts(1))
         assertEquals(today, app.container.database.productDao().getById(id)!!.returnLastReminder)
 
         manager.cancelAll()
+        awaitTexts(0)
         TestListenableWorkerBuilder<ReminderWorker>(app).build().doWork()
+        Thread.sleep(1_500)
         assertTrue("Aynı gün ikinci kez bildirim gönderilmemeli", ourTexts().isEmpty())
 
         // CI'da bildirim çekmecesinin görüntüsü için bildirimi yeniden göster
         val entity = app.container.database.productDao().getById(id)!!
         app.container.database.productDao().update(entity.copy(returnLastReminder = null))
         TestListenableWorkerBuilder<ReminderWorker>(app).build().doWork()
-        assertEquals(1, ourTexts().size)
+        assertEquals(1, awaitTexts(1).size)
     }
 }
