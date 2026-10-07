@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 13+ temalı ikon için tek renkli katman -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+  <group android:pivotX="54" android:pivotY="54" android:scaleX="0.94" android:scaleY="0.94">
+    <path android:fillColor="#FFFFFFFF" android:pathData="M43.5,65 L51.5,69.5 L45.8,81.5 L42.4,77.4 L37.2,79.6 Z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M64.5,65 L56.5,69.5 L62.2,81.5 L65.6,77.4 L70.8,79.6 Z" />
+    <path android:fillColor="#FFFFFFFF" android:fillType="evenOdd" android:pathData="M54,31.5 Q58.41,28.33 61.27,32.95 Q66.56,31.71 67.44,37.06 Q72.79,37.94 71.55,43.23 Q76.17,46.09 73,50.5 Q76.17,54.91 71.55,57.77 Q72.79,63.06 67.44,63.94 Q66.56,69.29 61.27,68.05 Q58.41,72.67 54,69.5 Q49.59,72.67 46.73,68.05 Q41.44,69.29 40.56,63.94 Q35.21,63.06 36.45,57.77 Q31.83,54.91 35,50.5 Q31.83,46.09 36.45,43.23 Q35.21,37.94 40.56,37.06 Q41.44,31.71 46.73,32.95 Q49.59,28.33 54,31.5 Z M41,50.5 A13,13 0 1,0 67,50.5 A13,13 0 1,0 41,50.5 Z" />
+    <path
+        android:pathData="M43,50.5 L53,60.5 L76.5,31.5"
+        android:strokeWidth="6.6"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineJoin="miter"
+        android:strokeMiterLimit="10" />
+  </group>
+</vector>
