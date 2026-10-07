@@ -2,7 +2,7 @@ name: Android
 
 on:
   push:
-    branches: [ccr-38695d75-1p1qgi]
+    branches: [main, ccr-38695d75-1p1qgi]
   workflow_dispatch:
 
 permissions:
