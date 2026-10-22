@@ -21,12 +21,26 @@ Ekran görüntüleri ve test çıktıları her derlemeden sonra `ci-screenshots`
 
 Yerelde: `./gradlew testDebugUnitTest assembleRelease` (Android SDK gerekir). En düşük sürüm Android 8.0 (API 26).
 
+## Play Store sürümü
+
+Play Console'a yüklenen AAB, gizli **yükleme anahtarıyla** (`garantiledim-upload.jks`, alias `upload`) imzalanır. Anahtar ve şifresi bu depoda değildir; geliştiricide saklanır. Kaybolursa Play Console > Uygulama bütünlüğü bölümünden yükleme anahtarı sıfırlanabilir (uygulamanın asıl imza anahtarını Google tutar).
+
+Yerelde imzalı AAB:
+
+```
+UPLOAD_KEYSTORE=/yol/garantiledim-upload.jks UPLOAD_STORE_PASSWORD=... BUILD_NUMBER=<sürüm kodu> ./gradlew bundleRelease
+```
+
+Çıktı: `app/build/outputs/bundle/release/app-release.aab`. R8 eşleme dosyası (`app/build/outputs/mapping/release/mapping.txt`) çökme raporlarını okunur kılmak için aynı sürüme Play Console'dan eklenir. Her yeni yüklemede `BUILD_NUMBER` (sürüm kodu) bir öncekinden büyük olmalıdır.
+
+GitHub Actions'ın her derlemede imzalı AAB de üretmesi için depo ayarlarında (Settings > Secrets and variables > Actions) şu sırlar tanımlanır: `UPLOAD_KEYSTORE_BASE64` (`base64 -w0 garantiledim-upload.jks` çıktısı), `UPLOAD_STORE_PASSWORD`, `UPLOAD_KEY_ALIAS` (`upload`), `UPLOAD_KEY_PASSWORD`. Tanımlıysa AAB ve eşleme dosyası `garantiledim-play-<derleme no>` adlı çıktı olarak indirilebilir; herkese açık sürüme konmaz.
+
 ## Gizlilik politikası ve kullanım koşulları
 
 Play Console'a verilecek herkese açık bağlantılar (uygulama içindeki metinlerle aynı dosyalar):
 
-- Gizlilik politikası: https://github.com/yilmazmurat08/garantiledim/blob/ccr-38695d75-1p1qgi/app/src/main/assets/legal/gizlilik-politikasi.md
-- Kullanım koşulları: https://github.com/yilmazmurat08/garantiledim/blob/ccr-38695d75-1p1qgi/app/src/main/assets/legal/kullanim-kosullari.md
+- Gizlilik politikası: https://github.com/yilmazmurat08/garantiledim/blob/main/app/src/main/assets/legal/gizlilik-politikasi.md
+- Kullanım koşulları: https://github.com/yilmazmurat08/garantiledim/blob/main/app/src/main/assets/legal/kullanim-kosullari.md
 
 ## Yapı
 
@@ -46,8 +60,9 @@ app/src/main/java/com/garantiledim/app/
 - [x] Fiş/fatura (fotoğraf veya PDF) ekleme, önizleme ve İndirilenler'e kaydetme
 - [x] Bildirimler: bitişe 3 gün kala her gün, son gün ve süre dolunca (WorkManager)
 - [x] Emülatörde otomatik testler: tüm ekranlar, fiş/fatura, indirme, bildirim
-- [x] Gizlilik politikası ve kullanım koşulları (uygulamada Profil & Ayarlar > Yasal)
-- [ ] Play Store: yükleme anahtarı, AAB, mağaza kaydı
+- [x] Gizlilik politikası ve kullanım koşulları (uygulamada Profil & Ayarlar > Yasal ve ilk açılış ekranı)
+- [x] Play Store: yükleme anahtarı ve imzalı AAB
+- [ ] Play Console: mağaza kaydı ve kapalı test
 - [ ] Premium (deneme, abonelik, yedekleme) — Google Play Faturalandırma, Play Console kurulumuyla birlikte
 
 Yazı tipi: Poppins, SIL Open Font License 1.1 ([`licenses/Poppins-OFL.txt`](licenses/Poppins-OFL.txt)).

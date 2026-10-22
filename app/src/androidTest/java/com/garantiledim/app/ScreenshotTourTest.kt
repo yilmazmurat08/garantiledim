@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
@@ -16,6 +17,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import com.garantiledim.app.domain.Category
 import com.garantiledim.app.domain.Product
@@ -52,7 +54,12 @@ class ScreenshotTourTest {
         rule.waitForIdle()
         Thread.sleep(600)
         rule.waitForIdle()
-        val bitmap = rule.onRoot().captureToImage().asAndroidBitmap()
+        // Diyalog açıkken iki pencere olur; o durumda ekranın tamamı alınır.
+        val bitmap = if (rule.onAllNodes(isRoot()).fetchSemanticsNodes().size > 1) {
+            InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
+        } else {
+            rule.onRoot().captureToImage().asAndroidBitmap()
+        }
         File(outDir, "$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
 
