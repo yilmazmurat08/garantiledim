@@ -97,7 +97,7 @@ class ScreenshotTourTest {
         shot("00-ilk-acilis")
 
         // Tur 6 ürünle gezildiği için Premium açık başlar; sonda ücretsiz sürüm ve paywall gösterilir.
-        runBlocking { app.container.premium.setTestState(owned = true) }
+        app.container.premium.setTestState(owned = true)
         seed()
         waitForText("Günün Garantileri")
         shot("01-ana-sayfa")
@@ -160,7 +160,7 @@ class ScreenshotTourTest {
         waitForText("Oyun Konsolu")
         shot("09-kaydedilen-urun")
 
-        runBlocking { app.container.premium.setTestState(owned = false, price = "₺149,99") }
+        app.container.premium.setTestState(owned = false, price = "₺709,99")
         rule.onNodeWithContentDescription("Geri").performClick()
         waitForText("Günün Garantileri")
         rule.onNodeWithText("Profil & Ayarlar").performClick()

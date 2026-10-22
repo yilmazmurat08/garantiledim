@@ -4,4 +4,5 @@
     <exclude domain="file" path="receipts/" />
     <exclude domain="file" path="photos/" />
     <exclude domain="file" path="thumbs/" />
+    <exclude domain="file" path="datastore/premium.preferences_pb" />
 </full-backup-content>

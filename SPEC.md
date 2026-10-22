@@ -342,8 +342,14 @@ Scroll akıcılığı için:
 - Yedekle / Geri yükle: ürünler, fiş/faturalar, ürün fotoğrafları, ad ve hatırlatma ayarları tek .zip dosyasına yazılır (`garantiledim.json` + `files/receipts|photos|thumbs/…`). Kullanıcı dosyayı istediği yere kaydeder (Drive dahil); geri yükleme onay sorulduktan sonra telefondaki ürünleri yedektekilerle değiştirir. Yalnızca beklenen klasörlerdeki düz dosya adları kabul edilir
 - Abonelik ve deneme süresi yok (Play tek seferlik üründe deneme sunmaz; ücretsiz 3 ürün deneme işlevi görür)
 
-**Satın alma durumu:**
-- Sunucu yoktur. Açılışta ve Premium ekranında Play'den satın almalar sorgulanır, sonuç DataStore'da saklanır (çevrimdışı açılışta son bilinen durum geçerli). Play'e ulaşılamazsa durum değişmez
+**Satın alma durumu ve güvenlik:**
+- Sunucu yoktur. Açılışta ve Premium ekranında Play'den satın almalar sorgulanır
+- Premium yalnızca Google Play'in uygulamaya özel lisans anahtarıyla (Play Console > Lisanslama, `garantiledim.playLicenseKey`) imzası doğrulanan, bu pakete ve `garantiledim_premium` ürününe ait, ödemesi tamamlanmış satın alma kaydıyla açılır (`PurchaseVerifier`, SHA1withRSA). Sahte faturalandırma servisleri (Lucky Patcher vb.) geçerli imza üretemez. Anahtar yoksa Play AAB'si derlenmez
+- Cihazda "premium" bayrağı tutulmaz; Play'in imzalı kaydı ayrı bir DataStore dosyasında (`premium`) saklanır ve her açılışta imzası yeniden doğrulanır. Elle değiştirilen kayıt geçersiz olur. Çevrimdışı açılışta saklı imzalı kayıt geçerlidir
+- Kayıt Google yedeğine ve telefon aktarımına girmez; başka cihaza kopyalanamaz, yeni telefonda Play'den yeniden doğrulanır
+- Süre ya da tarih kullanılmaz (deneme yok, ömür boyu); telefonun saatini ileri/geri almak bir şey açmaz ya da kapatmaz. Ücretsiz sınır ürün sayısına bağlıdır, tarihe değil
+- Test durumu yalnızca debug sürümde ayarlanabilir
+- Sınır: sunucu doğrulaması olmayan her uygulama gibi, uygulama dosyası değiştirilip yeniden imzalanırsa denetimler atlatılabilir (root/korsan APK). Bu, kodu küçültme ve gizleme (R8) ile zorlaştırılır; tamamen kapatmak için sunucu tarafı doğrulama gerekir
 - Satın alma 3 gün içinde onaylanmazsa Play iade eder; uygulama satın almayı görür görmez onaylar (`acknowledgePurchase`). Bekleyen ödeme (PENDING) tamamlanınca Premium açılır
 - İade edilen satın alma sorguda görünmez ve Premium kapanır. Ürünler silinmez: eklenme sırasına göre ilk 3 ürün dışındakiler kilitlenir (hatırlatma gönderilmez, detayda "Bu ürünün hatırlatması kapalı" ve Premium bağlantısı). Kilit veritabanında tutulmaz, her seferinde hesaplanır
 - "Satın alımı geri yükle": aynı Google hesabındaki satın almayı yeniden sorgular (yeni telefon)
@@ -353,7 +359,7 @@ Scroll akıcılığı için:
 - Dört madde: Sınırsız ürün, Her ürüne hatırlatma, Yedekle ve taşı, Tek seferlik ödeme
 - Pembe buton "Premium'u al · {Play'in biçimlendirdiği fiyat}". Altında "Tek seferlik ödeme · Abonelik değildir, otomatik yenilenmez. Ödeme Google Play hesabından alınır.", "Satın alımı geri yükle", Kullanım Koşulları ve Gizlilik Politikası bağlantıları
 - Play'e ulaşılamazsa "Tekrar dene" ve açıklama; satın alındıktan sonra "Premium aktif" ve "Devam et"
-- Fiyat kodda yazılmaz, Play Console'dan gelir. Türkiye için önerilen başlangıç ₺149,99
+- Fiyat kodda yazılmaz, Play Console'dan gelir. Türkiye fiyatı ₺709,99: KDV (%20) ve Google'ın %15 hizmet ücretinden sonra satış başına net ~₺500 (hesap: play/README.md)
 
 **Profil & Ayarlar:** "Premium" bölümü (aktifse rozet, değilse "Premium'a geç") ve "Yedekleme" bölümü (Yedekle, Yedekten geri yükle; Premium değilse "Premium" rozeti ve dokununca Premium ekranı).
 

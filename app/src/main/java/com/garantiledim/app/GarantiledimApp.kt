@@ -47,7 +47,7 @@ class AppContainer(context: Context) {
     val files = FileStore(context)
     val products = ProductRepository(database.productDao(), files)
     val settings = SettingsRepository(context)
-    val premium = PremiumManager(context, settings, appScope)
+    val premium = PremiumManager(context, appScope)
     val backup = BackupManager(context, database, settings)
     val today = TodayClock()
 }

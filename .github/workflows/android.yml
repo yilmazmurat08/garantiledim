@@ -83,6 +83,7 @@ jobs:
           UPLOAD_STORE_PASSWORD: ${{ secrets.UPLOAD_STORE_PASSWORD }}
           UPLOAD_KEY_ALIAS: ${{ secrets.UPLOAD_KEY_ALIAS }}
           UPLOAD_KEY_PASSWORD: ${{ secrets.UPLOAD_KEY_PASSWORD }}
+          PLAY_LICENSE_KEY: ${{ secrets.PLAY_LICENSE_KEY }}
         run: |
           export UPLOAD_KEYSTORE="$RUNNER_TEMP/upload.jks"
           echo "$UPLOAD_KEYSTORE_BASE64" | base64 -d > "$UPLOAD_KEYSTORE"

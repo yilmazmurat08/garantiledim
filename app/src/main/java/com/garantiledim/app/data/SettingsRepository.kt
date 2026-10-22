@@ -3,7 +3,6 @@ package com.garantiledim.app.data
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
@@ -38,20 +37,8 @@ class SettingsRepository(context: Context) {
         val reminderDays = intPreferencesKey("reminder_days")
         val notifyHour = intPreferencesKey("notify_hour")
         val notifyMinute = intPreferencesKey("notify_minute")
-        val premiumOwned = booleanPreferencesKey("premium_owned")
     }
 
-    /**
-     * Google Play'den en son doğrulanan Premium durumu. Uygulama açılırken Play'e bağlanmadan
-     * (çevrimdışıyken de) doğru durumla başlamak için saklanır.
-     */
-    val premiumOwned: Flow<Boolean> = store.data
-        .catch { emit(emptyPreferences()) }
-        .map { it[Keys.premiumOwned] == true }
-
-    suspend fun setPremiumOwned(owned: Boolean) {
-        store.edit { it[Keys.premiumOwned] = owned }
-    }
 
     val settings: Flow<UserSettings> = store.data
         .catch { emit(emptyPreferences()) }

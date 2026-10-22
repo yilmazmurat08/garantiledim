@@ -31,6 +31,8 @@ Yerelde imzalı AAB:
 UPLOAD_KEYSTORE=/yol/garantiledim-upload.jks UPLOAD_STORE_PASSWORD=... BUILD_NUMBER=<sürüm kodu> ./gradlew bundleRelease
 ```
 
+Play lisans anahtarı (`gradle.properties` > `garantiledim.playLicenseKey`) girilmeden AAB derlenmez; satın alma imzaları bu anahtarla doğrulanır (play/README.md).
+
 Çıktı: `app/build/outputs/bundle/release/app-release.aab`. R8 eşleme dosyası (`app/build/outputs/mapping/release/mapping.txt`) çökme raporlarını okunur kılmak için aynı sürüme Play Console'dan eklenir. Her yeni yüklemede `BUILD_NUMBER` (sürüm kodu) bir öncekinden büyük olmalıdır.
 
 GitHub Actions'ın her derlemede imzalı AAB de üretmesi için depo ayarlarında (Settings > Secrets and variables > Actions) şu sırlar tanımlanır: `UPLOAD_KEYSTORE_BASE64` (`base64 -w0 garantiledim-upload.jks` çıktısı), `UPLOAD_STORE_PASSWORD`, `UPLOAD_KEY_ALIAS` (`upload`), `UPLOAD_KEY_PASSWORD`. Tanımlıysa AAB ve eşleme dosyası `garantiledim-play-<derleme no>` adlı çıktı olarak indirilebilir; herkese açık sürüme konmaz.

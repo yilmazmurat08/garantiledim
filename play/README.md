@@ -117,8 +117,22 @@ Play Console'da uygulama içi ürün oluşturmak için önce Faturalandırma izn
 2. Ürün kimliği: `garantiledim_premium` (koddaki kimlik; sonradan değiştirilemez, birebir yazılmalı)
 3. Ad: `Garantiledim Premium`
 4. Açıklama: `Sınırsız ürün ve hatırlatma, yedekleme ve geri yükleme. Tek seferlik ödeme.`
-5. Fiyat: Türkiye için önerilen başlangıç **₺149,99**. Diğer ülkelerin fiyatlarını Play otomatik çevirir. Fiyat uygulamaya Play'den gelir, kodda yazılı değildir; sonradan Play Console'dan değiştirilebilir.
+5. Fiyat: Türkiye için **₺709,99** (aşağıdaki hesap). Diğer ülkelerin fiyatlarını Play otomatik çevirir. Fiyat uygulamaya Play'den gelir, kodda yazılı değildir; sonradan Play Console'dan değiştirilebilir.
 6. Ürünü **Etkinleştir**.
+
+**Fiyat hesabı (hedef: satış başına net ~₺500)**
+
+Play'de girilen Türkiye fiyatı KDV dahildir. KDV'yi (%20) Google tahsil edip öder, kalan tutardan Google'ın hizmet ücreti kesilir:
+
+| Durum | Formül | Önerilen fiyat | Sana kalan |
+|---|---|---|---|
+| %15 hizmet ücreti (yıllık ilk 1 milyon $; Play Console'da **15% hizmet ücreti kademesine** kayıt gerekir) | fiyat ÷ 1,20 × 0,85 | **₺709,99** | ~₺503 |
+| %15 + %7,5 dijital hizmet vergisi de senden kesilirse | fiyat ÷ 1,20 × (0,85 − 0,075) | ₺779,99 | ~₺504 |
+| %30 hizmet ücreti (15% kademesine kayıt yoksa) | fiyat ÷ 1,20 × 0,70 | ₺859,99 | ~₺502 |
+
+15% kademesine kayıt: Play Console > Ayarlar > **Hesap grubu** (Account group) oluştur; ücretsiz ve tek seferliktir. Kendi gelir vergin bu hesaba dahil değildir; kesin oranlar için mali müşavirine danış. Ödemeler Google'dan dolar/TL kuruna göre aylık gelir.
+
+**Lisans anahtarı (zorunlu):** Play Console > **Para kazanma kurulumu** > Lisanslama bölümündeki "Base64 kodlu RSA genel anahtarı"nı kopyala ve depoda `gradle.properties` dosyasındaki `garantiledim.playLicenseKey=` satırına tek satır olarak yapıştır (ya da GitHub sırrı `PLAY_LICENSE_KEY`). Bu genel anahtardır, gizli değildir. Uygulama satın almaların gerçekten Google Play'den geldiğini bu anahtarla doğrular; anahtar olmadan Play AAB'si derlenmez.
 
 Test satın alması: Play Console > Ayarlar > **Lisans testi** listesine kendi Gmail adresini ekle. Bu hesapla kapalı testten kurulan uygulamada satın alma gerçek ücret alınmadan "test kartı" ile yapılır.
 

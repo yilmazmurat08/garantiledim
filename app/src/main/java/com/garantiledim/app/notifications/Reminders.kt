@@ -139,7 +139,7 @@ class ReminderWorker(
 
         val entities = dao.getAll()
         // Premium yokken ücretsiz sınırı aşan ürünlere hatırlatma gönderilmez (SPEC.md madde 10).
-        val locked = lockedProductIds(entities.map { it.toDomain() }, container.settings.premiumOwned.first())
+        val locked = lockedProductIds(entities.map { it.toDomain() }, container.premium.isPremiumNow())
         for (entity in entities) {
             if (entity.id in locked) continue
             val product = entity.toDomain()

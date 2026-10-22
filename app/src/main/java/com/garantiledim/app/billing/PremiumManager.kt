@@ -3,6 +3,12 @@ package com.garantiledim.app.billing
 import android.app.Activity
 import android.content.Context
 import androidx.annotation.VisibleForTesting
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
 import com.android.billingclient.api.AcknowledgePurchaseParams
 import com.android.billingclient.api.BillingClient
 import com.android.billingclient.api.BillingClient.BillingResponseCode
@@ -16,7 +22,7 @@ import com.android.billingclient.api.Purchase
 import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
-import com.garantiledim.app.data.SettingsRepository
+import com.garantiledim.app.BuildConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,6 +31,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -42,15 +52,36 @@ sealed interface PremiumOffer {
     data object Unavailable : PremiumOffer
 }
 
+/** Doğrulanmış satın alma kaydı yalnızca bu dosyada tutulur; yedeklere ve telefon aktarımına girmez. */
+private val Context.premiumStore: DataStore<Preferences> by preferencesDataStore(name = "premium")
+
+private object PremiumKeys {
+    val json = stringPreferencesKey("purchase_json")
+    val signature = stringPreferencesKey("purchase_signature")
+}
+
 /**
  * Garantiledim Premium: Google Play Faturalandırma ile tek seferlik "ömür boyu" satın alma.
- * Sunucu yoktur; satın alma Google Play'den sorgulanır ve sonucu cihazda saklanır.
+ *
+ * Sunucu yoktur; güvenlik şu kurallarla sağlanır:
+ * - Premium yalnızca Google Play'in uygulamaya özel anahtarıyla imzalanmış, bu pakete ve
+ *   `garantiledim_premium` ürününe ait, ödemesi tamamlanmış satın alma kaydıyla açılır
+ *   ([PurchaseVerifier]). Sahte faturalandırma servisleri geçerli imza üretemez.
+ * - Cihazda "premium = true" gibi bir bayrak tutulmaz; Play'in imzalı kaydı saklanır ve her açılışta
+ *   imzası yeniden doğrulanır. Kayıt elle değiştirilirse imza tutmaz.
+ * - Kayıt yedeklere ve telefon aktarımına girmez (backup kuralları); başka cihaza kopyalanamaz.
+ * - Süre ya da tarih kullanılmaz (deneme yok, ömür boyu); telefonun saatini değiştirmek bir şey açmaz.
+ * - Play'e her ulaşıldığında satın almalar yeniden sorgulanır; iade edilen satın alma kaydı silinir.
+ * - Bekleyen (PENDING) ödeme Premium açmaz.
  */
 class PremiumManager(
-    context: Context,
-    private val settings: SettingsRepository,
+    private val context: Context,
     private val scope: CoroutineScope,
+    licenseKey: String = BuildConfig.PLAY_LICENSE_KEY,
 ) : PurchasesUpdatedListener {
+
+    private val verifier = PurchaseVerifier(licenseKey)
+    private val store = context.applicationContext.premiumStore
 
     private val client: BillingClient = BillingClient.newBuilder(context.applicationContext)
         .setListener(this)
@@ -58,9 +89,19 @@ class PremiumManager(
         .enableAutoServiceReconnection()
         .build()
 
-    /** Kullanıcı Premium sahibi mi (son doğrulanan durum, uygulama açılışında önbellekten gelir). */
-    val isPremium: StateFlow<Boolean> = settings.premiumOwned
+    /** Yalnızca testlerde (debug) kullanılan sahiplik durumu. */
+    private val testOwned = MutableStateFlow<Boolean?>(null)
+
+    private val storedOwned = store.data
+        .catch { emit(emptyPreferences()) }
+        .map { isValidRecord(it[PremiumKeys.json], it[PremiumKeys.signature]) }
+
+    /** Kullanıcı Premium sahibi mi: saklanan imzalı satın alma kaydı her seferinde doğrulanır. */
+    val isPremium: StateFlow<Boolean> = combine(storedOwned, testOwned) { stored, test -> test ?: stored }
         .stateIn(scope, SharingStarted.Eagerly, false)
+
+    /** Arka plan işleri için güncel durum (StateFlow'un ilk değerini beklemeden). */
+    suspend fun isPremiumNow(): Boolean = testOwned.value ?: storedOwned.first()
 
     private val _offer = MutableStateFlow<PremiumOffer>(PremiumOffer.Loading)
     val offer: StateFlow<PremiumOffer> = _offer.asStateFlow()
@@ -70,7 +111,7 @@ class PremiumManager(
     val messages: SharedFlow<String> = _messages.asSharedFlow()
 
     private var details: ProductDetails? = null
-    private var testMode = false
+    private val testMode get() = testOwned.value != null
 
     /** Play'e bağlanır, ürün fiyatını ve mevcut satın almaları yükler. Tekrar çağrılabilir. */
     fun refresh() {
@@ -100,7 +141,7 @@ class PremiumManager(
     /** Google Play satın alma penceresini açar. */
     fun purchase(activity: Activity) {
         if (testMode) {
-            setOwned(true)
+            testOwned.value = true
             return
         }
         val productDetails = details
@@ -171,10 +212,10 @@ class PremiumManager(
                 if (userRequested) _messages.tryEmit("Google Play'e bağlanılamadı, biraz sonra tekrar dene")
                 return@queryPurchasesAsync
             }
-            val premium = purchases.firstOrNull { PREMIUM_PRODUCT_ID in it.products }
+            val premium = purchases.firstOrNull { PREMIUM_PRODUCT_ID in it.products && isAuthentic(it) }
             if (premium == null) {
-                // Satın alma yok ya da iade edildi.
-                setOwned(false)
+                // Satın alma yok, iade edildi ya da doğrulanamadı: saklanan kayıt silinir.
+                clearRecord()
                 if (userRequested) _messages.tryEmit("Bu Google hesabında Premium satın alımı bulunamadı")
             } else {
                 handle(premium)
@@ -187,9 +228,18 @@ class PremiumManager(
 
     private fun handle(purchase: Purchase) {
         if (PREMIUM_PRODUCT_ID !in purchase.products) return
+        if (!isAuthentic(purchase)) {
+            _messages.tryEmit("Satın alma doğrulanamadı")
+            return
+        }
         when (purchase.purchaseState) {
             Purchase.PurchaseState.PURCHASED -> {
-                setOwned(true)
+                scope.launch {
+                    store.edit {
+                        it[PremiumKeys.json] = purchase.originalJson
+                        it[PremiumKeys.signature] = purchase.signature
+                    }
+                }
                 // Onaylanmayan satın alma Google Play tarafından 3 gün içinde iade edilir.
                 if (!purchase.isAcknowledged) {
                     val params = AcknowledgePurchaseParams.newBuilder().setPurchaseToken(purchase.purchaseToken).build()
@@ -202,15 +252,33 @@ class PremiumManager(
         }
     }
 
-    private fun setOwned(owned: Boolean) {
-        scope.launch { settings.setPremiumOwned(owned) }
+    /** Play imzası geçerli ve bu uygulamaya ait mi. */
+    private fun isAuthentic(purchase: Purchase): Boolean =
+        purchase.packageName == context.packageName && verifier.isValid(purchase.originalJson, purchase.signature)
+
+    /** Saklanan kayıt: imzası geçerli, bu uygulamanın Premium ürünü ve ödemesi tamamlanmış. */
+    private fun isValidRecord(json: String?, signature: String?): Boolean {
+        if (json == null || signature == null || !verifier.isValid(json, signature)) return false
+        val purchase = runCatching { Purchase(json, signature) }.getOrNull() ?: return false
+        return purchase.packageName == context.packageName &&
+            PREMIUM_PRODUCT_ID in purchase.products &&
+            purchase.purchaseState == Purchase.PurchaseState.PURCHASED
     }
 
-    /** Testlerde Google Play olmadan fiyat ve sahiplik durumunu ayarlar. */
+    private fun clearRecord() {
+        scope.launch {
+            store.edit {
+                it.remove(PremiumKeys.json)
+                it.remove(PremiumKeys.signature)
+            }
+        }
+    }
+
+    /** Testlerde Google Play olmadan fiyat ve sahiplik durumunu ayarlar. Yalnızca debug sürümde çalışır. */
     @VisibleForTesting
-    suspend fun setTestState(owned: Boolean, price: String? = "₺149,99") {
-        testMode = true
+    fun setTestState(owned: Boolean, price: String? = "₺709,99") {
+        check(BuildConfig.DEBUG) { "Test durumu yalnızca debug sürümde ayarlanabilir" }
+        testOwned.value = owned
         _offer.value = price?.let { PremiumOffer.Available(it) } ?: PremiumOffer.Unavailable
-        settings.setPremiumOwned(owned)
     }
 }

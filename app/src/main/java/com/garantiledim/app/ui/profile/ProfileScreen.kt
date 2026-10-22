@@ -100,6 +100,11 @@ class ProfileViewModel(private val container: AppContainer) : ViewModel() {
 
     private fun runBackupTask(block: suspend () -> String) {
         if (busy.value) return
+        // Yedekleme Premium'a dahil; arayüzden bağımsız olarak burada da denetlenir.
+        if (!premium.value) {
+            messages.tryEmit("Yedekleme Premium'a dahildir")
+            return
+        }
         busy.value = true
         viewModelScope.launch {
             val message = try {

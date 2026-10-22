@@ -200,7 +200,7 @@ class FeaturesTest {
         assertEquals(listOf("Sınır 3"), products.filter { it.id in locked }.map { it.name })
 
         premium.setTestState(owned = true)
-        assertTrue(app.container.settings.premiumOwned.first())
+        assertTrue(premium.isPremiumNow())
         assertTrue(lockedProductIds(products, premium = true).isEmpty())
         dao.getAll().forEach { repo.delete(it.id) }
     }
