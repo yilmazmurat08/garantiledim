@@ -35,6 +35,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -42,6 +43,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -137,27 +139,28 @@ fun AppRoot(openProduct: MutableStateFlow<Long?>) {
             startDestination = Tab.HOME.route,
             modifier = Modifier.padding(padding),
         ) {
-            composable(Tab.HOME.route) {
+            composable(Tab.HOME.route) { entry ->
                 HomeScreen(
-                    onAddProduct = { navController.navigate(Routes.edit()) },
-                    onOpenProduct = { navController.navigate(Routes.detail(it)) },
+                    onAddProduct = { entry.ifResumed { navController.navigate(Routes.edit()) } },
+                    onOpenProduct = { id -> entry.ifResumed { navController.navigate(Routes.detail(id)) } },
                     onOpenTab = { navController.openTab(it) },
+                    onOpenLegal = { doc -> entry.ifResumed { navController.navigate(Routes.legal(doc)) } },
                 )
             }
-            composable(Tab.LIST.route) {
+            composable(Tab.LIST.route) { entry ->
                 ProductListScreen(
-                    onAddProduct = { navController.navigate(Routes.edit()) },
-                    onOpenProduct = { navController.navigate(Routes.detail(it)) },
+                    onAddProduct = { entry.ifResumed { navController.navigate(Routes.edit()) } },
+                    onOpenProduct = { id -> entry.ifResumed { navController.navigate(Routes.detail(id)) } },
                 )
             }
-            composable(Tab.AGENDA.route) {
+            composable(Tab.AGENDA.route) { entry ->
                 AgendaScreen(
-                    onOpenProduct = { navController.navigate(Routes.detail(it)) },
+                    onOpenProduct = { id -> entry.ifResumed { navController.navigate(Routes.detail(id)) } },
                     onOpenSettings = { navController.openTab(Tab.PROFILE) },
                 )
             }
-            composable(Tab.PROFILE.route) {
-                ProfileScreen(onOpenLegal = { navController.navigate(Routes.legal(it)) })
+            composable(Tab.PROFILE.route) { entry ->
+                ProfileScreen(onOpenLegal = { doc -> entry.ifResumed { navController.navigate(Routes.legal(doc)) } })
             }
             composable(
                 route = Routes.LEGAL,
@@ -165,7 +168,7 @@ fun AppRoot(openProduct: MutableStateFlow<Long?>) {
             ) { entry ->
                 val doc = LegalDoc.entries.firstOrNull { it.route == entry.arguments?.getString("doc") }
                     ?: LegalDoc.PRIVACY
-                LegalScreen(doc = doc, onBack = { navController.popBackStack() })
+                LegalScreen(doc = doc, onBack = { entry.ifResumed { navController.popBackStack() } })
             }
             composable(
                 route = Routes.EDIT,
@@ -173,9 +176,9 @@ fun AppRoot(openProduct: MutableStateFlow<Long?>) {
                     type = NavType.LongType
                     defaultValue = NEW_PRODUCT_ID
                 }),
-            ) {
+            ) { entry ->
                 EditProductScreen(
-                    onBack = { navController.popBackStack() },
+                    onBack = { entry.ifResumed { navController.popBackStack() } },
                     onCreated = { id ->
                         askNotificationPermission()
                         navController.navigate(Routes.detail(id)) {
@@ -193,14 +196,22 @@ fun AppRoot(openProduct: MutableStateFlow<Long?>) {
             composable(
                 route = Routes.DETAIL,
                 arguments = listOf(navArgument("id") { type = NavType.LongType }),
-            ) {
+            ) { entry ->
                 ProductDetailScreen(
-                    onBack = { navController.popBackStack() },
-                    onEdit = { navController.navigate(Routes.edit(it)) },
+                    onBack = { entry.ifResumed { navController.popBackStack() } },
+                    onEdit = { id -> entry.ifResumed { navController.navigate(Routes.edit(id)) } },
                 )
             }
         }
     }
+}
+
+/**
+ * Ekran geçişi sürerken gelen ikinci dokunuşu yok sayar. Aksi halde geri tuşuna hızlı iki kez
+ * basmak ana ekranı da yığından çıkarıp boş ekran bırakır, karta iki kez dokunmak detayı iki kez açar.
+ */
+private inline fun NavBackStackEntry.ifResumed(block: () -> Unit) {
+    if (lifecycle.currentState == Lifecycle.State.RESUMED) block()
 }
 
 private fun NavHostController.openTab(tab: Tab) {

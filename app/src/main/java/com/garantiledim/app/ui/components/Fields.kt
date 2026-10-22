@@ -18,6 +18,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -155,11 +159,13 @@ fun ReceiptThumbnail(attachment: Attachment, modifier: Modifier = Modifier) {
             .background(GColors.Text),
         contentAlignment = Alignment.Center,
     ) {
-        if (attachment.thumbPath != null) {
+        var failed by remember(attachment.thumbPath) { mutableStateOf(false) }
+        if (attachment.thumbPath != null && !failed) {
             AsyncImage(
                 model = File(attachment.thumbPath),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
+                onError = { failed = true },
                 modifier = Modifier.matchParentSize(),
             )
         } else {

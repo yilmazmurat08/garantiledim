@@ -11,6 +11,9 @@ plugins {
 // eskisinin üzerine kurulabilsin diye artar.
 val buildNumber = (System.getenv("GITHUB_RUN_NUMBER") ?: System.getenv("BUILD_NUMBER"))?.toIntOrNull() ?: 1
 
+// Play yükleme anahtarının yolu; verilmezse release test anahtarıyla imzalanır.
+val uploadKeystore: String? = System.getenv("UPLOAD_KEYSTORE")?.takeIf { it.isNotBlank() }
+
 android {
     namespace = "com.garantiledim.app"
     compileSdk = 36
@@ -26,12 +29,22 @@ android {
     }
 
     signingConfigs {
-        // Yalnızca test APK'ları için. Play Store'a yüklenecek sürüm ayrı, gizli bir anahtarla imzalanacak.
+        // Yalnızca test APK'ları için; herkese açık.
         create("test") {
             storeFile = file("signing/test.keystore")
             storePassword = "garantiledim-test"
             keyAlias = "test"
             keyPassword = "garantiledim-test"
+        }
+        // Play Console'a yüklenecek AAB için gizli yükleme anahtarı. Depoya konmaz; yolu ve
+        // şifreleri ortam değişkenleriyle verilir (README > Play Store sürümü).
+        if (uploadKeystore != null) {
+            create("upload") {
+                storeFile = file(uploadKeystore)
+                storePassword = System.getenv("UPLOAD_STORE_PASSWORD")
+                keyAlias = System.getenv("UPLOAD_KEY_ALIAS") ?: "upload"
+                keyPassword = System.getenv("UPLOAD_KEY_PASSWORD") ?: System.getenv("UPLOAD_STORE_PASSWORD")
+            }
         }
     }
 
@@ -39,7 +52,7 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            signingConfig = signingConfigs.getByName("test")
+            signingConfig = signingConfigs.getByName(if (uploadKeystore != null) "upload" else "test")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -70,6 +83,8 @@ kotlin {
 
 ksp {
     arg("room.generateKotlin", "true")
+    // Veritabanı şeması her sürümde kaydedilir; sonraki sürümlerde veri kaybı olmadan geçiş yazılabilsin diye.
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 dependencies {

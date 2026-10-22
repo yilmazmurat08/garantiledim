@@ -73,12 +73,15 @@ import com.garantiledim.app.ui.components.surfaceCard
 import com.garantiledim.app.ui.theme.GColors
 import com.garantiledim.app.ui.theme.GShapes
 import com.garantiledim.app.ui.theme.GType
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.io.File
 
 data class DeadlineUi(
     val deadline: Deadline,
@@ -93,6 +96,8 @@ data class DetailUiState(
     val product: Product? = null,
     val expired: Boolean = false,
     val deadlines: List<DeadlineUi> = emptyList(),
+    /** Fiş kayıtlı ama dosyası bu telefonda yok (örneğin bulut yedeğinden geri yüklendi). */
+    val receiptMissing: Boolean = false,
     val message: String? = null,
 )
 
@@ -123,9 +128,10 @@ class ProductDetailViewModel(
                         description = elapsedDescription(d, today),
                     )
                 },
+            receiptMissing = product?.receipt?.let { !File(it.path).exists() } == true,
             message = msg,
         )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DetailUiState())
+    }.flowOn(Dispatchers.IO).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DetailUiState())
 
     fun download() {
         val receipt = state.value.product?.receipt ?: return
@@ -240,6 +246,8 @@ fun ProductDetailScreen(
                 if (receipt != null) {
                     ReceiptCard(
                         receipt = receipt,
+                        missing = state.receiptMissing,
+                        onReplace = { onEdit(product.id) },
                         onOpen = {
                             try {
                                 context.startActivity(viewModel.receiptViewIntent(receipt))
@@ -318,7 +326,13 @@ private fun InfoBox(label: String, value: String, modifier: Modifier = Modifier)
 }
 
 @Composable
-private fun ReceiptCard(receipt: Attachment, onOpen: () -> Unit, onDownload: () -> Unit) {
+private fun ReceiptCard(
+    receipt: Attachment,
+    missing: Boolean,
+    onReplace: () -> Unit,
+    onOpen: () -> Unit,
+    onDownload: () -> Unit,
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -327,14 +341,31 @@ private fun ReceiptCard(receipt: Attachment, onOpen: () -> Unit, onDownload: () 
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        ReceiptThumbnail(receipt, Modifier.clickable(onClickLabel = "Faturayı aç", onClick = onOpen))
+        ReceiptThumbnail(receipt, Modifier.clickable(enabled = !missing, onClickLabel = "Faturayı aç", onClick = onOpen))
         Column(Modifier.weight(1f)) {
             Text(receipt.fileName, style = GType.BodyMedium, color = GColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(
-                "${if (receipt.isPdf) "PDF" else "Görsel"} · ${formatFileSize(receipt.sizeBytes)} · orijinal",
+                if (missing) {
+                    "Dosya bu telefonda yok, yeniden ekleyebilirsin"
+                } else {
+                    "${if (receipt.isPdf) "PDF" else "Görsel"} · ${formatFileSize(receipt.sizeBytes)} · orijinal"
+                },
                 style = GType.Small,
-                color = GColors.TextSecondary,
+                color = if (missing) GColors.Warning else GColors.TextSecondary,
             )
+        }
+        if (missing) {
+            OutlinedButton(
+                onClick = onReplace,
+                shape = GShapes.Inner,
+                border = BorderStroke(1.dp, GColors.Pink),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = GColors.Pink),
+                contentPadding = PaddingValues(horizontal = 12.dp),
+                modifier = Modifier.height(44.dp),
+            ) {
+                Text("Ekle", style = GType.Label.copy(fontWeight = GType.Badge.fontWeight))
+            }
+            return@Row
         }
         OutlinedButton(
             onClick = onDownload,

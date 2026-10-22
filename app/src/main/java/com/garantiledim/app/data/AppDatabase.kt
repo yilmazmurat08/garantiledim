@@ -33,6 +33,22 @@ interface ProductDao {
     @Update
     suspend fun update(product: ProductEntity)
 
+    /**
+     * Yalnızca bildirim durumunu yazar; günlük iş çalışırken kullanıcının yaptığı düzenlemenin
+     * üzerine eski değerlerin yazılmasını önler.
+     */
+    @Query(
+        "UPDATE products SET returnLastReminder = :returnLast, returnExpiredNotified = :returnExpired, " +
+            "warrantyLastReminder = :warrantyLast, warrantyExpiredNotified = :warrantyExpired WHERE id = :id"
+    )
+    suspend fun updateReminderState(
+        id: Long,
+        returnLast: LocalDate?,
+        returnExpired: Boolean,
+        warrantyLast: LocalDate?,
+        warrantyExpired: Boolean,
+    )
+
     @Query("DELETE FROM products WHERE id = :id")
     suspend fun deleteById(id: Long)
 }
@@ -45,7 +61,7 @@ class Converters {
     fun toEpochDay(date: LocalDate?): Long? = date?.toEpochDay()
 }
 
-@Database(entities = [ProductEntity::class], version = 1, exportSchema = false)
+@Database(entities = [ProductEntity::class], version = 1, exportSchema = true)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun productDao(): ProductDao

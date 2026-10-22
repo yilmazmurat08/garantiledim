@@ -1,6 +1,7 @@
 package com.garantiledim.app.ui.edit
 
 import android.content.ActivityNotFoundException
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -85,6 +86,11 @@ fun EditProductScreen(
     val snackbar = remember { SnackbarHostState() }
     var datePicker by rememberSaveable { mutableStateOf<DateTarget?>(null) }
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
+    var confirmDiscard by rememberSaveable { mutableStateOf(false) }
+    val leave = {
+        if (viewModel.hasUnsavedChanges()) confirmDiscard = true else onBack()
+    }
+    BackHandler(enabled = state.result == null, onBack = leave)
     var photoMenu by remember { mutableStateOf(false) }
 
     LaunchedEffect(state.result) {
@@ -118,12 +124,26 @@ fun EditProductScreen(
             viewModel.onCameraUnavailable()
         }
     }
+    fun pickReceipt() {
+        try {
+            receiptPicker.launch(arrayOf("image/*", "application/pdf"))
+        } catch (e: ActivityNotFoundException) {
+            viewModel.showMessage("Dosya seçici bulunamadı")
+        }
+    }
+    fun pickPhoto() {
+        try {
+            photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        } catch (e: ActivityNotFoundException) {
+            viewModel.showMessage("Galeri bulunamadı")
+        }
+    }
 
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().imePadding()) {
             BackTopBar(
                 title = if (state.isEdit) "Ürünü Düzenle" else "Yeni Garanti Ekle",
-                onBack = onBack,
+                onBack = leave,
             )
             if (!state.loaded) return@Column
 
@@ -208,7 +228,7 @@ fun EditProductScreen(
                                 text = "Galeriden / dosyadan",
                                 icon = R.drawable.ic_image,
                                 enabled = !state.busy,
-                                onClick = { receiptPicker.launch(arrayOf("image/*", "application/pdf")) },
+                                onClick = ::pickReceipt,
                                 modifier = Modifier.weight(1f),
                             )
                             DashedActionButton(
@@ -245,7 +265,7 @@ fun EditProductScreen(
                                 leadingIcon = { GIcon(R.drawable.ic_image, tint = GColors.PastelPink, size = 20.dp) },
                                 onClick = {
                                     photoMenu = false
-                                    photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                                    pickPhoto()
                                 },
                             )
                             DropdownMenuItem(
@@ -337,6 +357,19 @@ fun EditProductScreen(
                     DateTarget.WARRANTY_END -> viewModel.onOverride(DurationType.GARANTI, date)
                 }
             },
+        )
+    }
+
+    if (confirmDiscard) {
+        ConfirmDialog(
+            title = "Değişiklikler kaydedilmedi",
+            text = "Çıkarsan girdiğin bilgiler ve eklediğin dosyalar kaybolacak.",
+            confirmLabel = "Çık",
+            onConfirm = {
+                confirmDiscard = false
+                onBack()
+            },
+            onDismiss = { confirmDiscard = false },
         )
     }
 

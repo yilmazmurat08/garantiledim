@@ -83,16 +83,24 @@ object Reminders {
         }
     }
 
+    /** Silinen ürünün bekleyen bildirimlerini kaldırır. */
+    fun cancel(context: Context, productId: Long) {
+        val manager = NotificationManagerCompat.from(context)
+        DurationType.entries.forEach { manager.cancel(notificationId(productId, it)) }
+    }
+
+    private fun notificationId(productId: Long, type: DurationType): Int = (productId * 2 + type.ordinal).toInt()
+
     fun show(context: Context, product: ProductEntity, type: DurationType, action: ReminderAction) {
         if (!canNotify(context)) return
         val text = action.text(product.name, type)
         val intent = Intent(context, MainActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
             .putExtra(EXTRA_PRODUCT_ID, product.id)
-        val notificationId = (product.id * 2 + type.ordinal).toInt()
+        val id = notificationId(product.id, type)
         val pending = PendingIntent.getActivity(
             context,
-            notificationId,
+            id,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
@@ -106,7 +114,7 @@ object Reminders {
             .setAutoCancel(true)
             .build()
         try {
-            NotificationManagerCompat.from(context).notify(notificationId, notification)
+            NotificationManagerCompat.from(context).notify(id, notification)
         } catch (e: SecurityException) {
             // İzin bu arada geri alındı; bildirim gönderilmez.
         }
@@ -120,6 +128,9 @@ class ReminderWorker(
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
+        // Bildirimler kapalıyken hatırlatmalar "gönderildi" diye işaretlenmez; izin açılınca
+        // güncel olanlar gelir (eski "süresi doldu" bildirimleri zaten pencere dışında kalır).
+        if (!Reminders.canNotify(applicationContext)) return Result.success()
         val container = (applicationContext as GarantiledimApp).container
         val dao = container.database.productDao()
         val settings = container.settings.settings.first()
@@ -158,7 +169,15 @@ class ReminderWorker(
                     }
                 }
             }
-            if (updated != entity) dao.update(updated)
+            if (updated != entity) {
+                dao.updateReminderState(
+                    id = updated.id,
+                    returnLast = updated.returnLastReminder,
+                    returnExpired = updated.returnExpiredNotified,
+                    warrantyLast = updated.warrantyLastReminder,
+                    warrantyExpired = updated.warrantyExpiredNotified,
+                )
+            }
         }
         return Result.success()
     }

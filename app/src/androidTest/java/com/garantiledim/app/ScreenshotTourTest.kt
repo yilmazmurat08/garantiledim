@@ -141,6 +141,11 @@ class ScreenshotTourTest {
         shot("08-yeni-urun")
 
         rule.onAllNodes(hasSetTextAction()).onFirst().performTextInput("Oyun Konsolu")
+        // Kaydetmeden çıkmaya çalışınca onay sorulur, Vazgeç ile forma dönülür.
+        rule.onNodeWithContentDescription("Geri").performClick()
+        waitForText("Değişiklikler kaydedilmedi")
+        shot("08b-kaydedilmedi-uyarisi")
+        rule.onNodeWithText("Vazgeç").performClick()
         rule.onNodeWithText("Kaydet").performClick()
         waitForText("Garanti bitişi")
         waitForText("Oyun Konsolu")

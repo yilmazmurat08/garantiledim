@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 ve öncesi bulut yedeği; açıklama data_extraction_rules.xml'de. -->
+<full-backup-content>
+    <exclude domain="file" path="receipts/" />
+    <exclude domain="file" path="photos/" />
+    <exclude domain="file" path="thumbs/" />
+</full-backup-content>

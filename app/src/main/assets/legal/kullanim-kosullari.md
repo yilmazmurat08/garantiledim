@@ -1,6 +1,6 @@
 # Kullanım Koşulları
 
-Yürürlük tarihi: 6 Ekim 2026
+Yürürlük tarihi: 22 Ekim 2026
 
 Bu koşullar, Lusnika tarafından geliştirilen Garantiledim Android uygulamasının ("Uygulama") kullanımını düzenler. Uygulamayı kullanarak bu koşulları kabul etmiş olursun.
 
@@ -20,7 +20,7 @@ Hatırlatmalar telefonunun bildirim ayarlarına, pil tasarrufu ayarlarına ve si
 
 ## Veriler ve yedekleme
 
-Girdiğin bilgiler ve eklediğin belgeler yalnızca telefonunda saklanır (ayrıntılar için Gizlilik Politikası'na bak). Telefonun kaybolursa, sıfırlanırsa ya da uygulamayı kaldırırsan bu bilgiler kaybolabilir. Önemli belgelerinin bir kopyasını ayrıca saklamanı öneririz; bunun için faturaları "İndir" ile İndirilenler klasörüne kaydedebilirsin.
+Girdiğin bilgiler ve eklediğin belgeler yalnızca telefonunda saklanır (ayrıntılar için Gizlilik Politikası'na bak). Telefonun kaybolursa, sıfırlanırsa ya da uygulamayı kaldırırsan bu bilgiler kaybolabilir. Google bulut yedeği ürün listeni ve ayarlarını kapsar, fiş, fatura ve fotoğraf dosyalarını kapsamaz. Önemli belgelerinin bir kopyasını ayrıca saklamanı öneririz; bunun için faturaları "İndir" ile İndirilenler klasörüne kaydedebilirsin.
 
 ## Senin içeriğin
 

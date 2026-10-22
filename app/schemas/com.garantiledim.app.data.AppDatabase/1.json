@@ -1,0 +1,146 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "d9128235e87ea73d4d5496c57b6eed07",
+    "entities": [
+      {
+        "tableName": "products",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `store` TEXT NOT NULL, `category` TEXT NOT NULL, `purchaseDate` INTEGER NOT NULL, `deliveryDate` INTEGER NOT NULL, `tracksReturn` INTEGER NOT NULL, `tracksWarranty` INTEGER NOT NULL, `returnEndOverride` INTEGER, `warrantyEndOverride` INTEGER, `receiptPath` TEXT, `receiptThumbPath` TEXT, `receiptFileName` TEXT, `receiptMimeType` TEXT, `receiptSizeBytes` INTEGER, `photoPath` TEXT, `photoThumbPath` TEXT, `returnLastReminder` INTEGER, `returnExpiredNotified` INTEGER NOT NULL, `warrantyLastReminder` INTEGER, `warrantyExpiredNotified` INTEGER NOT NULL, `createdAt` INTEGER NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "store",
+            "columnName": "store",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "category",
+            "columnName": "category",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "purchaseDate",
+            "columnName": "purchaseDate",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deliveryDate",
+            "columnName": "deliveryDate",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tracksReturn",
+            "columnName": "tracksReturn",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tracksWarranty",
+            "columnName": "tracksWarranty",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "returnEndOverride",
+            "columnName": "returnEndOverride",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "warrantyEndOverride",
+            "columnName": "warrantyEndOverride",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "receiptPath",
+            "columnName": "receiptPath",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "receiptThumbPath",
+            "columnName": "receiptThumbPath",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "receiptFileName",
+            "columnName": "receiptFileName",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "receiptMimeType",
+            "columnName": "receiptMimeType",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "receiptSizeBytes",
+            "columnName": "receiptSizeBytes",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "photoPath",
+            "columnName": "photoPath",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "photoThumbPath",
+            "columnName": "photoThumbPath",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "returnLastReminder",
+            "columnName": "returnLastReminder",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "returnExpiredNotified",
+            "columnName": "returnExpiredNotified",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "warrantyLastReminder",
+            "columnName": "warrantyLastReminder",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "warrantyExpiredNotified",
+            "columnName": "warrantyExpiredNotified",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "createdAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd9128235e87ea73d4d5496c57b6eed07')"
+    ]
+  }
+}
