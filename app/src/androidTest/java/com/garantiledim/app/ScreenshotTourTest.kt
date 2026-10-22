@@ -78,17 +78,17 @@ class ScreenshotTourTest {
                 tracksWarranty = war,
             )
         val receipt = app.container.files.importReceipt(
-            TestFiles.uri(app, TestFiles.pdf(app, "hepsiburada-fatura.pdf"))
+            TestFiles.uri(app, TestFiles.pdf(app, "ornek-fatura.pdf"))
         )
         repo.save(
-            product("Kablosuz Kulaklık", "Hepsiburada", Category.ELEKTRONIK, today.minusDays(12), ret = true, war = true)
+            product("Kablosuz Kulaklık", "Online Mağaza", Category.ELEKTRONIK, today.minusDays(12), ret = true, war = true)
                 .copy(receipt = receipt)
         )
-        repo.save(product("Kışlık Mont", "Trendyol", Category.GIYIM, today.minusDays(7), ret = true, war = false))
-        repo.save(product("Akıllı Saat", "Teknosa", Category.ELEKTRONIK, today.plusDays(70).minusYears(2), ret = false, war = true))
-        repo.save(product("Akıllı Telefon", "n11", Category.ELEKTRONIK, today.plusMonths(9).minusYears(2), ret = false, war = true))
-        repo.save(product("Buzdolabı", "Arçelik Bayi", Category.BEYAZ_ESYA, today.minusMonths(4), ret = false, war = true))
-        repo.save(product("Kahve Makinesi", "MediaMarkt", Category.BEYAZ_ESYA, today.minusDays(8).minusYears(2), ret = false, war = true))
+        repo.save(product("Kışlık Mont", "Moda Mağazası", Category.GIYIM, today.minusDays(7), ret = true, war = false))
+        repo.save(product("Akıllı Saat", "Teknoloji Market", Category.ELEKTRONIK, today.plusDays(70).minusYears(2), ret = false, war = true))
+        repo.save(product("Akıllı Telefon", "Telefoncu", Category.ELEKTRONIK, today.plusMonths(9).minusYears(2), ret = false, war = true))
+        repo.save(product("Buzdolabı", "Beyaz Eşya Bayi", Category.BEYAZ_ESYA, today.minusMonths(4), ret = false, war = true))
+        repo.save(product("Kahve Makinesi", "Elektronik Market", Category.BEYAZ_ESYA, today.minusDays(8).minusYears(2), ret = false, war = true))
     }
 
     @Test
