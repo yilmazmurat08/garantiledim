@@ -22,6 +22,7 @@ import androidx.test.rule.GrantPermissionRule
 import com.garantiledim.app.domain.Category
 import com.garantiledim.app.domain.Product
 import com.garantiledim.app.i18n.LanguageChoice
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
 import org.junit.Test
@@ -90,6 +91,37 @@ class ScreenshotTourTest {
         repo.save(product("Akıllı Telefon", "Telefoncu", Category.ELEKTRONIK, today.plusMonths(9).minusYears(2), ret = false, war = true))
         repo.save(product("Buzdolabı", "Beyaz Eşya Bayi", Category.BEYAZ_ESYA, today.minusMonths(4), ret = false, war = true))
         repo.save(product("Kahve Makinesi", "Elektronik Market", Category.BEYAZ_ESYA, today.minusDays(8).minusYears(2), ret = false, war = true))
+    }
+
+    private fun englishSampleData() = runBlocking {
+        val names = mapOf(
+            "Kablosuz Kulaklık" to "Wireless Headphones",
+            "Kışlık Mont" to "Winter Coat",
+            "Akıllı Saat" to "Smartwatch",
+            "Akıllı Telefon" to "Smartphone",
+            "Buzdolabı" to "Refrigerator",
+            "Kahve Makinesi" to "Coffee Machine",
+            "Oyun Konsolu" to "Game Console",
+        )
+        val stores = mapOf(
+            "Online Mağaza" to "Online Store",
+            "Moda Mağazası" to "Fashion Store",
+            "Teknoloji Market" to "Tech Market",
+            "Telefoncu" to "Phone Shop",
+            "Beyaz Eşya Bayi" to "Appliance Dealer",
+            "Elektronik Market" to "Electronics Market",
+        )
+        val repo = app.container.products
+        repo.products.first().forEach { p ->
+            repo.save(
+                p.copy(
+                    name = names[p.name] ?: p.name,
+                    store = stores[p.store] ?: p.store,
+                    receipt = p.receipt?.copy(fileName = "sample-invoice.pdf"),
+                )
+            )
+        }
+        app.container.settings.setName("Emma")
     }
 
     @Test
@@ -179,6 +211,10 @@ class ScreenshotTourTest {
         rule.onNodeWithText("Devam et").performClick()
         waitForText("Yedekten geri yükle")
 
+        // İngilizce mağaza görüntüleri için örnek ürünler İngilizce adlarla yeniden adlandırılır
+        // (ürün adları kullanıcı verisidir, uygulama bunları çevirmez).
+        englishSampleData()
+
         // Dil ayarından İngilizceye geç: ekran yeniden kurulur, tüm metinler İngilizce olur.
         rule.onNodeWithText("Uygulama dili").performScrollTo().performClick()
         rule.onNodeWithText("English").performClick()
@@ -191,7 +227,7 @@ class ScreenshotTourTest {
         rule.onNodeWithText("My Warranties").performClick()
         waitForText("products tracked", substring = true)
         shot("22-en-belgelerim")
-        rule.onNodeWithText("Kablosuz Kulaklık").performClick()
+        rule.onNodeWithText("Wireless Headphones").performClick()
         waitForText("Last day to return")
         shot("23-en-detay")
         rule.onNodeWithContentDescription("Back").performClick()
