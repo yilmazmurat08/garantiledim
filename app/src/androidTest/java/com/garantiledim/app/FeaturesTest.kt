@@ -4,18 +4,25 @@ import android.Manifest
 import android.app.Notification
 import android.app.NotificationManager
 import android.graphics.BitmapFactory
+import android.os.Bundle
 import android.provider.MediaStore
+import androidx.lifecycle.SavedStateHandle
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import androidx.work.ListenableWorker
 import androidx.work.WorkManager
 import androidx.work.testing.TestListenableWorkerBuilder
 import com.garantiledim.app.domain.Category
+import com.garantiledim.app.domain.DurationType
 import com.garantiledim.app.domain.Product
 import com.garantiledim.app.notifications.ReminderWorker
+import com.garantiledim.app.ui.edit.EditProductViewModel
+import com.garantiledim.app.ui.edit.PickTarget
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -73,6 +80,40 @@ class FeaturesTest {
         val thumbBounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeFile(attachment.thumbPath, thumbBounds)
         assertTrue("Önizleme küçük olmalı", thumbBounds.outWidth in 1..1200)
+    }
+
+    @Test
+    fun formVeKameraFotografiUygulamaKapanincaKorunur() {
+        val handle = SavedStateHandle()
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        lateinit var restored: EditProductViewModel
+        instrumentation.runOnMainSync {
+            val vm = EditProductViewModel(app.container, handle)
+            assertFalse(vm.hasUnsavedChanges())
+            vm.onName("Robot Süpürge")
+            vm.onStore("Teknosa")
+            vm.onCategory(Category.BEYAZ_ESYA)
+            vm.onTrack(DurationType.IADE, false)
+            vm.cameraTarget(PickTarget.RECEIPT)
+            // Kamera açıkken Android süreci kapatır; yeni ViewModel kayıtlı durumdan kurulur.
+            restored = EditProductViewModel(app.container, handle)
+        }
+        val form = restored.state.value
+        assertEquals("Robot Süpürge", form.name)
+        assertEquals("Teknosa", form.store)
+        assertEquals(Category.BEYAZ_ESYA, form.category)
+        assertFalse(form.tracksReturn)
+        assertTrue(restored.hasUnsavedChanges())
+
+        // Kameranın yazdığı fotoğraf, yeniden kurulan forma fiş olarak eklenir.
+        val cameraFile = File(handle.get<Bundle>("draft")!!.getString("cameraFile")!!)
+        TestFiles.jpeg(app, "kamera-donus.jpg").copyTo(cameraFile, overwrite = true)
+        instrumentation.runOnMainSync { restored.onCameraResult(true) }
+        val deadline = System.currentTimeMillis() + 10_000
+        while (restored.state.value.receipt == null && System.currentTimeMillis() < deadline) Thread.sleep(100)
+        val receipt = restored.state.value.receipt
+        assertNotNull("Kamera fotoğrafı fiş olarak eklenmeli", receipt)
+        assertTrue(File(receipt!!.path).length() > 0)
     }
 
     @Test

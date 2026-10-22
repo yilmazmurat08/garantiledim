@@ -22,6 +22,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -102,7 +106,10 @@ fun StatusBadge(text: String, urgency: Urgency, modifier: Modifier = Modifier, l
     )
 }
 
-/** Ürün fotoğrafı; yoksa kategori renginde ikonlu kutu. Süresi dolmuşsa soluk. */
+/**
+ * Ürün fotoğrafı; yoksa ya da dosya açılamıyorsa (örneğin yedekten geri yüklenen telefonda dosya
+ * yoksa) kategori renginde ikonlu kutu. Süresi dolmuşsa soluk.
+ */
 @Composable
 fun ProductVisual(
     category: Category,
@@ -119,11 +126,13 @@ fun ProductVisual(
             .background(category.tileColor()),
         contentAlignment = Alignment.Center,
     ) {
-        if (thumbPath != null) {
+        var failed by remember(thumbPath) { mutableStateOf(false) }
+        if (thumbPath != null && !failed) {
             AsyncImage(
                 model = File(thumbPath),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
+                onError = { failed = true },
                 modifier = Modifier.matchParentSize(),
             )
         } else {
@@ -144,11 +153,13 @@ fun Avatar(name: String, photoPath: String?, size: Dp, modifier: Modifier = Modi
             .background(GColors.Outline),
         contentAlignment = Alignment.Center,
     ) {
-        if (photoPath != null) {
+        var failed by remember(photoPath) { mutableStateOf(false) }
+        if (photoPath != null && !failed) {
             AsyncImage(
                 model = File(photoPath),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
+                onError = { failed = true },
                 modifier = Modifier.matchParentSize(),
             )
         } else {

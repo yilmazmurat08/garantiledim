@@ -112,7 +112,7 @@ Aktif sekme pembe (#FF7AB8) ikon + yazı ve üstünde 28×3dp pembe çizgi; pasi
   - Saat ikonu + "İade · 5 Eki 2026" / "Garanti · 12 Ara 2026"
   - Rozet ve tarih, ürünün **öne çıkan süresine** göredir: süresi devam eden sürelerden bitişi en yakın olanı; hepsi dolmuşsa en son dolanı (bkz. madde 6)
   - Karta dokunma → ürün detay ekranı
-- **Boş durum (ilk açılış):** Hiç ürün yoksa "Günün Garantileri" yerine logo, "Garantiledim" yazısı, "Garanti sürelerini takipte kal!" ve pembe "İlk ürününü ekle" butonu gösterilir
+- **Boş durum (ilk açılış):** Hiç ürün yoksa "Günün Garantileri" yerine logo, "Garantiledim" yazısı, "Garanti sürelerini takipte kal!" ve pembe "İlk ürününü ekle" butonu gösterilir. Altında küçük yazıyla "Garantiledim'i kullanarak Kullanım Koşulları'nı kabul etmiş olursun. Bilgilerin yalnızca bu telefonda saklanır; ayrıntılar Gizlilik Politikası'nda." (iki başlık pembe bağlantı, ilgili metni açar). Küçük ekranda kaydırılabilir
 
 ### 4.2 Garanti Belgelerim
 
@@ -150,6 +150,9 @@ Aktif sekme pembe (#FF7AB8) ikon + yazı ve üstünde 28×3dp pembe çizgi; pasi
 
 Düzenleme modunda aynı ekran mevcut değerlerle dolu açılır. Bir sürenin bitiş tarihi değiştiyse o sürenin bildirim durumu (madde 7) sıfırlanır.
 
+- Form ve bekleyen kamera çekimi `SavedStateHandle`'da tutulur: kamera ya da galeri açıkken Android uygulamayı kapatırsa form kaldığı yerden açılır ve çekilen fotoğraf eklenir
+- Kaydedilmemiş değişiklik varken geri tuşu ya da geri butonu "Değişiklikler kaydedilmedi" onayı sorar
+
 ### 4.4 Ürün Detayı
 
 Üstte geri butonu, ortada "Ürün Detayı", sağda düzenle (kalem) butonu. Gösterilenler:
@@ -163,6 +166,7 @@ Düzenleme modunda aynı ekran mevcut değerlerle dolu açılır. Bir sürenin b
   - Android 8–9 (API 26–28): `WRITE_EXTERNAL_STORAGE` izni (`android:maxSdkVersion="28"`) istenip `Environment.DIRECTORY_DOWNLOADS`'a yazılır
   - Başarılı olunca "Fatura İndirilenler klasörüne kaydedildi" mesajı gösterilir
 - Fiş eklenmemişse bu satır yerine "Fiş / fatura ekle" butonu
+- Fiş kayıtlı ama dosyası telefonda yoksa (bulut yedeğinden geri yüklenmiş telefon) satırda "Dosya bu telefonda yok, yeniden ekleyebilirsin" ve "Ekle" butonu (düzenleme ekranını açar). Ürün fotoğrafı ya da önizleme açılamazsa kategori ikonu gösterilir
 - Ürünü silme: düzenleme ekranının en altında, onay diyaloğuyla. Silinince dosyaları ve thumbnail'leri de silinir, bildirim kaydı temizlenir
 
 ### 4.5 Ajanda ve Hatırlatıcılar
@@ -311,6 +315,13 @@ Liste ekranındaki kısa rozetlerde aynı metin "kaldı" eki olmadan kullanılı
 - Room sorguları ve dosya işlemleri ana iş parçacığında değil, coroutine + `Dispatchers.IO` üzerinde çalışmalı
 - Bildirim izni (Android 13+) ve eski sürümlerdeki depolama izni reddedilirse uygulama çökmeden nazikçe uyarı göstermeli. Galeri/dosya seçimi (`OpenDocument`) ve kamera (`TakePicture`, manifest'te `CAMERA` izni bildirilmeden) ek izin gerektirmez
 - Boş liste, eksik fiş, silinmiş dosya, geçersiz tarih gibi durumlar için her ekranda boş/hata durumu tasarlanmalı
+- Başka uygulama açan her işlem (dosya seçici, galeri, kamera, e-posta, ayarlar, dosyayı açma) uygulama bulunamazsa çökmez, mesaj gösterir
+- Geçiş animasyonu sürerken gelen ikinci dokunuş yok sayılır (geri tuşuna hızlı iki kez basınca boş ekran kalmaz, kart iki kez açılmaz)
+- Günlük bildirim işi yalnızca bildirim durumu sütunlarını yazar; aynı anda yapılan düzenlemenin üzerine yazmaz. Bildirimler kapalıyken hatırlatmaları gönderildi diye işaretlemez. Silinen ürünün bildirimleri kaldırılır
+
+Yedekleme ve güncellemeler:
+- Google bulut yedeği uygulama başına 25 MB ile sınırlıdır; aşılırsa hiç yedek alınmaz. Bu yüzden veritabanı ve ayarlar yedeklenir, `receipts/`, `photos/`, `thumbs/` klasörleri bulut yedeğinden hariç tutulur (`data_extraction_rules.xml`, Android 11 ve öncesi için `backup_rules.xml`). Telefondan telefona doğrudan aktarımda her şey taşınır
+- Room şeması her sürümde `app/schemas/` altına kaydedilir. Yayından sonra tablo değişirse sürüm artırılıp `Migration` yazılır; `fallbackToDestructiveMigration` kullanılmaz (kullanıcı verisi silinir)
 
 Scroll akıcılığı için:
 - Listeler LazyColumn / LazyVerticalGrid ile, her öğeye sabit bir key (`product.id`) verilmeli
@@ -354,5 +365,6 @@ Reklamsız, sade abonelik modeli önerilir — güven odaklı bu tür bir uygula
 - Geliştirici adı "Lusnika" (uygulamanın adı Garantiledim), iletişim e-postası yilmazmurat08@gmail.com
 - Gizlilik politikası uygulamanın gerçek davranışını anlatır: hesap yok, internet izni yok, veriler yalnızca cihazda; izinler (bildirim, Android 9 ve öncesinde depolama, WorkManager'ın arka plan izinleri) ve nedenleri; İndirilenler'e aktarılan kopyalar; Android otomatik yedeklemesi; KVKK; silme yolları
 - Kullanım koşulları: hukuki tavsiye olmadığı (6502 sayılı Kanun'a dayalı varsayılan süreler), bildirimlerin garanti edilmediği, verilerin cihazda tutulduğu ve yedek sorumluluğu, sorumluluğun sınırlandırılması, uygulanacak hukuk
+- Kullanım koşulları ve gizlilik politikası bağlantıları ilk açılış ekranında da gösterilir (madde 4.1)
 - Uygulamaya internet, analiz ya da ödeme özelliği eklendiğinde iki metin de güncellenmeli ve yürürlük tarihi değiştirilmeli
 

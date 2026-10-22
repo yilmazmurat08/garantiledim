@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
@@ -16,6 +17,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import com.garantiledim.app.domain.Category
 import com.garantiledim.app.domain.Product
@@ -52,7 +54,12 @@ class ScreenshotTourTest {
         rule.waitForIdle()
         Thread.sleep(600)
         rule.waitForIdle()
-        val bitmap = rule.onRoot().captureToImage().asAndroidBitmap()
+        // Diyalog açıkken iki pencere olur; o durumda ekranın tamamı alınır.
+        val bitmap = if (rule.onAllNodes(isRoot()).fetchSemanticsNodes().size > 1) {
+            InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
+        } else {
+            rule.onRoot().captureToImage().asAndroidBitmap()
+        }
         File(outDir, "$name.png").outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
 
@@ -71,17 +78,17 @@ class ScreenshotTourTest {
                 tracksWarranty = war,
             )
         val receipt = app.container.files.importReceipt(
-            TestFiles.uri(app, TestFiles.pdf(app, "hepsiburada-fatura.pdf"))
+            TestFiles.uri(app, TestFiles.pdf(app, "ornek-fatura.pdf"))
         )
         repo.save(
-            product("Kablosuz Kulaklık", "Hepsiburada", Category.ELEKTRONIK, today.minusDays(12), ret = true, war = true)
+            product("Kablosuz Kulaklık", "Online Mağaza", Category.ELEKTRONIK, today.minusDays(12), ret = true, war = true)
                 .copy(receipt = receipt)
         )
-        repo.save(product("Kışlık Mont", "Trendyol", Category.GIYIM, today.minusDays(7), ret = true, war = false))
-        repo.save(product("Akıllı Saat", "Teknosa", Category.ELEKTRONIK, today.plusDays(70).minusYears(2), ret = false, war = true))
-        repo.save(product("Akıllı Telefon", "n11", Category.ELEKTRONIK, today.plusMonths(9).minusYears(2), ret = false, war = true))
-        repo.save(product("Buzdolabı", "Arçelik Bayi", Category.BEYAZ_ESYA, today.minusMonths(4), ret = false, war = true))
-        repo.save(product("Kahve Makinesi", "MediaMarkt", Category.BEYAZ_ESYA, today.minusDays(8).minusYears(2), ret = false, war = true))
+        repo.save(product("Kışlık Mont", "Moda Mağazası", Category.GIYIM, today.minusDays(7), ret = true, war = false))
+        repo.save(product("Akıllı Saat", "Teknoloji Market", Category.ELEKTRONIK, today.plusDays(70).minusYears(2), ret = false, war = true))
+        repo.save(product("Akıllı Telefon", "Telefoncu", Category.ELEKTRONIK, today.plusMonths(9).minusYears(2), ret = false, war = true))
+        repo.save(product("Buzdolabı", "Beyaz Eşya Bayi", Category.BEYAZ_ESYA, today.minusMonths(4), ret = false, war = true))
+        repo.save(product("Kahve Makinesi", "Elektronik Market", Category.BEYAZ_ESYA, today.minusDays(8).minusYears(2), ret = false, war = true))
     }
 
     @Test
@@ -141,6 +148,11 @@ class ScreenshotTourTest {
         shot("08-yeni-urun")
 
         rule.onAllNodes(hasSetTextAction()).onFirst().performTextInput("Oyun Konsolu")
+        // Kaydetmeden çıkmaya çalışınca onay sorulur, Vazgeç ile forma dönülür.
+        rule.onNodeWithContentDescription("Geri").performClick()
+        waitForText("Değişiklikler kaydedilmedi")
+        shot("08b-kaydedilmedi-uyarisi")
+        rule.onNodeWithText("Vazgeç").performClick()
         rule.onNodeWithText("Kaydet").performClick()
         waitForText("Garanti bitişi")
         waitForText("Oyun Konsolu")

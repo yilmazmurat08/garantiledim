@@ -1,6 +1,7 @@
 package com.garantiledim.app.ui.edit
 
 import android.net.Uri
+import android.os.Bundle
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,6 +12,7 @@ import com.garantiledim.app.domain.DurationType
 import com.garantiledim.app.domain.Photo
 import com.garantiledim.app.domain.Product
 import com.garantiledim.app.domain.deadline
+import com.garantiledim.app.notifications.Reminders
 import com.garantiledim.app.ui.NEW_PRODUCT_ID
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -83,7 +85,7 @@ data class EditUiState(
 
 class EditProductViewModel(
     private val container: AppContainer,
-    handle: SavedStateHandle,
+    private val handle: SavedStateHandle,
 ) : ViewModel() {
 
     private val productId: Long = handle.get<Long>("id") ?: NEW_PRODUCT_ID
@@ -98,20 +100,27 @@ class EditProductViewModel(
     /** Kaydedilen üründen kaldırılan, kayıttan sonra silinecek dosyalar. */
     private val replacedPaths = mutableListOf<String>()
 
-    private var original: Product? = null
+    private var originalCreatedAt = 0L
     private var deliveryTouched = false
     private var saved = false
     private var pendingCamera: Pair<File, PickTarget>? = null
 
+    /** Formun açıldığı andaki hali; çıkarken kaydedilmemiş değişiklik var mı diye bakılır. */
+    private var initialForm: EditUiState? = if (isEdit) null else _state.value.formOnly()
+
     init {
-        if (isEdit) {
+        val draft = handle.get<Bundle>(KEY_DRAFT)
+        if (draft != null) {
+            // Kamera ya da galeri açıkken Android uygulamayı kapattıysa form kaldığı yerden sürer.
+            restore(draft)
+        } else if (isEdit) {
             viewModelScope.launch {
                 val product = container.products.get(productId)
                 if (product == null) {
                     _state.update { it.copy(loaded = true, message = "Ürün bulunamadı") }
                     return@launch
                 }
-                original = product
+                originalCreatedAt = product.createdAt
                 deliveryTouched = true
                 _state.value = EditUiState(
                     loaded = true,
@@ -128,8 +137,18 @@ class EditProductViewModel(
                     receipt = product.receipt,
                     photo = product.photo,
                 )
+                initialForm = _state.value.formOnly()
             }
         }
+        viewModelScope.launch {
+            _state.collect { if (it.loaded && !saved) persist() }
+        }
+    }
+
+    /** Kaydedilmemiş değişiklik var mı (geri tuşunda onay sormak için). */
+    fun hasUnsavedChanges(): Boolean {
+        val initial = initialForm ?: return false
+        return _state.value.formOnly() != initial
     }
 
     fun onName(value: String) = _state.update { it.copy(name = value, nameError = null) }
@@ -174,6 +193,7 @@ class EditProductViewModel(
     fun cameraTarget(target: PickTarget): Uri {
         val (file, uri) = container.files.createCameraTarget()
         pendingCamera = file to target
+        persist()
         return uri
     }
 
@@ -241,9 +261,10 @@ class EditProductViewModel(
         viewModelScope.launch {
             try {
                 val product = s.toProduct(id = if (isEdit) productId else 0)
-                    .copy(createdAt = original?.createdAt ?: 0)
+                    .copy(createdAt = originalCreatedAt)
                 val id = container.products.save(product)
                 saved = true
+                handle.remove<Bundle>(KEY_DRAFT)
                 importedPaths.clear()
                 container.files.delete(replacedPaths.toList())
                 replacedPaths.clear()
@@ -260,7 +281,9 @@ class EditProductViewModel(
         if (!isEdit) return
         viewModelScope.launch {
             container.products.delete(productId)
+            Reminders.cancel(container.appContext, productId)
             saved = true
+            handle.remove<Bundle>(KEY_DRAFT)
             container.files.delete(importedPaths.toList())
             importedPaths.clear()
             _state.update { it.copy(result = EditResult.Deleted) }
@@ -298,6 +321,32 @@ class EditProductViewModel(
         }
     }
 
+    private fun persist() {
+        handle[KEY_DRAFT] = _state.value.toFormBundle().apply {
+            putLong("createdAt", originalCreatedAt)
+            putBoolean("deliveryTouched", deliveryTouched)
+            putStringArrayList("imported", ArrayList(importedPaths))
+            putStringArrayList("replaced", ArrayList(replacedPaths))
+            pendingCamera?.let { (file, target) ->
+                putString("cameraFile", file.path)
+                putString("cameraTarget", target.name)
+            }
+            initialForm?.let { putBundle("initial", it.toFormBundle()) }
+        }
+    }
+
+    private fun restore(b: Bundle) {
+        _state.value = b.toForm().copy(loaded = true, isEdit = isEdit)
+        originalCreatedAt = b.getLong("createdAt")
+        deliveryTouched = b.getBoolean("deliveryTouched")
+        importedPaths += b.getStringArrayList("imported").orEmpty()
+        replacedPaths += b.getStringArrayList("replaced").orEmpty()
+        val cameraFile = b.getString("cameraFile")
+        val cameraTarget = b.getString("cameraTarget")?.let { name -> PickTarget.entries.firstOrNull { it.name == name } }
+        if (cameraFile != null && cameraTarget != null) pendingCamera = File(cameraFile) to cameraTarget
+        initialForm = b.getBundle("initial")?.toForm()?.formOnly()
+    }
+
     /**
      * Formdan çıkarılan dosya: bu oturumda eklendiyse hemen silinir,
      * kayıtlı üründense kayıttan sonra silinmek üzere bekletilir.
@@ -308,4 +357,76 @@ class EditProductViewModel(
         if (fresh.isNotEmpty()) viewModelScope.launch { container.files.delete(fresh) }
         replacedPaths += paths - fresh.toSet()
     }
+
+    private companion object {
+        const val KEY_DRAFT = "draft"
+    }
+}
+
+/** Yalnızca kullanıcının girdiği alanlar (hata, yükleniyor gibi geçici durumlar olmadan). */
+private fun EditUiState.formOnly() = EditUiState(
+    loaded = true,
+    isEdit = isEdit,
+    name = name,
+    store = store,
+    category = category,
+    purchaseDate = purchaseDate,
+    deliveryDate = deliveryDate,
+    tracksReturn = tracksReturn,
+    tracksWarranty = tracksWarranty,
+    returnOverride = returnOverride,
+    warrantyOverride = warrantyOverride,
+    receipt = receipt,
+    photo = photo,
+)
+
+private fun EditUiState.toFormBundle(): Bundle = Bundle().apply {
+    putString("name", name)
+    putString("store", store)
+    putString("category", category.name)
+    putLong("purchase", purchaseDate.toEpochDay())
+    putLong("delivery", deliveryDate.toEpochDay())
+    putBoolean("tracksReturn", tracksReturn)
+    putBoolean("tracksWarranty", tracksWarranty)
+    returnOverride?.let { putLong("returnOverride", it.toEpochDay()) }
+    warrantyOverride?.let { putLong("warrantyOverride", it.toEpochDay()) }
+    receipt?.let {
+        putString("receiptPath", it.path)
+        putString("receiptThumb", it.thumbPath)
+        putString("receiptName", it.fileName)
+        putString("receiptMime", it.mimeType)
+        putLong("receiptSize", it.sizeBytes)
+    }
+    photo?.let {
+        putString("photoPath", it.path)
+        putString("photoThumb", it.thumbPath)
+    }
+}
+
+private fun Bundle.toForm(): EditUiState {
+    fun date(key: String): LocalDate? = if (containsKey(key)) LocalDate.ofEpochDay(getLong(key)) else null
+    val receiptPath = getString("receiptPath")
+    val photoPath = getString("photoPath")
+    return EditUiState(
+        loaded = true,
+        name = getString("name").orEmpty(),
+        store = getString("store").orEmpty(),
+        category = Category.entries.firstOrNull { it.name == getString("category") } ?: Category.ELEKTRONIK,
+        purchaseDate = date("purchase") ?: LocalDate.now(),
+        deliveryDate = date("delivery") ?: LocalDate.now(),
+        tracksReturn = getBoolean("tracksReturn", true),
+        tracksWarranty = getBoolean("tracksWarranty", true),
+        returnOverride = date("returnOverride"),
+        warrantyOverride = date("warrantyOverride"),
+        receipt = receiptPath?.let {
+            Attachment(
+                path = it,
+                thumbPath = getString("receiptThumb"),
+                fileName = getString("receiptName").orEmpty(),
+                mimeType = getString("receiptMime") ?: "application/octet-stream",
+                sizeBytes = getLong("receiptSize"),
+            )
+        },
+        photo = photoPath?.let { Photo(it, getString("photoThumb")) },
+    )
 }

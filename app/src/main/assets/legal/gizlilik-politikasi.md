@@ -1,6 +1,6 @@
 # Gizlilik Politikası
 
-Yürürlük tarihi: 6 Ekim 2026
+Yürürlük tarihi: 22 Ekim 2026
 
 Bu politika, Garantiledim Android uygulamasının ("Uygulama") bilgilerini nasıl işlediğini açıklar. Uygulama Lusnika tarafından geliştirilmiştir. Sorularını yilmazmurat08@gmail.com adresine gönderebilirsin.
 
@@ -37,7 +37,7 @@ Bir faturayı "İndir" ile kaydettiğinde dosyanın bir kopyası telefonunun ort
 
 ## Yedekleme
 
-Telefonunda Google yedeklemesi açıksa Android, uygulama verilerini kendi yedekleme hizmetiyle senin Google hesabına yedekleyebilir. Bu yedekleme Android ve Google tarafından yürütülür; bu yedeğe biz erişemeyiz. Yedeklemeyi telefonunun ayarlarından kapatabilirsin.
+Telefonunda Google yedeklemesi açıksa Android, ürün listeni ve ayarlarını kendi yedekleme hizmetiyle senin Google hesabına yedekleyebilir. Fiş, fatura ve fotoğraf dosyaları bu bulut yedeğine dahil edilmez (Android'in uygulama başına yedekleme sınırı aşılıp hiç yedek alınamaması önlenir); yeni telefona kabloyla ya da kablosuz doğrudan aktarımda ise bu dosyalar da taşınır. Bu yedekleme ve aktarım Android ve Google tarafından yürütülür; bunlara biz erişemeyiz. Yedeklemeyi telefonunun ayarlarından kapatabilirsin.
 
 ## Google Play
 

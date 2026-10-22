@@ -38,6 +38,7 @@ class GarantiledimApp : Application() {
 
 /** Uygulama genelinde paylaşılan nesneler. */
 class AppContainer(context: Context) {
+    val appContext: Context = context.applicationContext
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     val database = AppDatabase.build(context)
     val files = FileStore(context)

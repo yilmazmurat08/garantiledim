@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -35,8 +37,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -55,6 +64,7 @@ import com.garantiledim.app.ui.components.GIcon
 import com.garantiledim.app.ui.components.ProductVisual
 import com.garantiledim.app.ui.components.StatusBadge
 import com.garantiledim.app.ui.components.surfaceCard
+import com.garantiledim.app.ui.legal.LegalDoc
 import com.garantiledim.app.ui.theme.GColors
 import com.garantiledim.app.ui.theme.GShapes
 import com.garantiledim.app.ui.theme.GType
@@ -94,13 +104,14 @@ fun HomeScreen(
     onAddProduct: () -> Unit,
     onOpenProduct: (Long) -> Unit,
     onOpenTab: (Tab) -> Unit,
+    onOpenLegal: (LegalDoc) -> Unit,
     viewModel: HomeViewModel = viewModel(factory = appViewModelFactory { c, _ -> HomeViewModel(c) }),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     if (!state.loaded) return
 
     if (!state.hasProducts) {
-        FirstRun(onAddProduct)
+        FirstRun(onAddProduct, onOpenLegal)
         return
     }
 
@@ -364,14 +375,20 @@ private fun HighlightCard(summary: ProductSummary, onClick: () -> Unit, modifier
     }
 }
 
-/** İlk açılış: henüz ürün yokken logo ve ekleme çağrısı. */
+/**
+ * İlk açılış: henüz ürün yokken logo, ekleme çağrısı ve kullanım koşulları ile gizlilik politikası
+ * bağlantıları. Küçük ekranda ya da büyük yazı boyutunda kaydırılabilir.
+ */
 @Composable
-private fun FirstRun(onAddProduct: () -> Unit) {
+private fun FirstRun(onAddProduct: () -> Unit, onOpenLegal: (LegalDoc) -> Unit) = BoxWithConstraints(
+    Modifier.fillMaxSize().statusBarsPadding(),
+) {
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .statusBarsPadding()
-            .padding(horizontal = 32.dp),
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
+            .heightIn(min = maxHeight)
+            .padding(horizontal = 32.dp, vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -398,5 +415,27 @@ private fun FirstRun(onAddProduct: () -> Unit) {
         ) {
             Text("İlk ürününü ekle", style = GType.CardTitle.copy(fontSize = GType.Body.fontSize * 1.14f))
         }
+        Spacer(Modifier.height(28.dp))
+        LegalNotice(onOpenLegal)
     }
+}
+
+@Composable
+private fun LegalNotice(onOpenLegal: (LegalDoc) -> Unit) {
+    val link = TextLinkStyles(SpanStyle(color = GColors.Pink, fontWeight = FontWeight.Medium))
+    fun AnnotatedString.Builder.docLink(doc: LegalDoc) {
+        withLink(LinkAnnotation.Clickable(doc.route, link) { onOpenLegal(doc) }) { append(doc.title) }
+    }
+    Text(
+        buildAnnotatedString {
+            append("Garantiledim'i kullanarak ")
+            docLink(LegalDoc.TERMS)
+            append("'nı kabul etmiş olursun. Bilgilerin yalnızca bu telefonda saklanır; ayrıntılar ")
+            docLink(LegalDoc.PRIVACY)
+            append("'nda.")
+        },
+        style = GType.Caption.copy(lineHeight = GType.Caption.fontSize * 1.6f),
+        color = GColors.TextMuted,
+        textAlign = TextAlign.Center,
+    )
 }

@@ -17,6 +17,9 @@ jobs:
     name: Derle, test et, APK yayınla
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    env:
+      # Play yükleme anahtarı depo sırlarına eklendiyse imzalı AAB de üretilir (README > Play Store sürümü).
+      HAS_UPLOAD_KEY: ${{ secrets.UPLOAD_KEYSTORE_BASE64 != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -72,6 +75,28 @@ jobs:
             --prerelease \
             --title "Garantiledim test sürümü 1.0.${GITHUB_RUN_NUMBER}" \
             --notes "Telefona doğrudan kurulabilen test APK'sı (derleme ${GITHUB_RUN_NUMBER}, ${GITHUB_SHA::7}). Play Store sürümü değildir."
+
+      - name: Play Store AAB'si (yükleme anahtarıyla imzalı)
+        if: success() && env.HAS_UPLOAD_KEY == 'true'
+        env:
+          UPLOAD_KEYSTORE_BASE64: ${{ secrets.UPLOAD_KEYSTORE_BASE64 }}
+          UPLOAD_STORE_PASSWORD: ${{ secrets.UPLOAD_STORE_PASSWORD }}
+          UPLOAD_KEY_ALIAS: ${{ secrets.UPLOAD_KEY_ALIAS }}
+          UPLOAD_KEY_PASSWORD: ${{ secrets.UPLOAD_KEY_PASSWORD }}
+        run: |
+          export UPLOAD_KEYSTORE="$RUNNER_TEMP/upload.jks"
+          echo "$UPLOAD_KEYSTORE_BASE64" | base64 -d > "$UPLOAD_KEYSTORE"
+          ./gradlew bundleRelease
+          rm -f "$UPLOAD_KEYSTORE"
+          mkdir -p play
+          cp app/build/outputs/bundle/release/app-release.aab "play/garantiledim-1.0.${GITHUB_RUN_NUMBER}.aab"
+          cp app/build/outputs/mapping/release/mapping.txt play/
+
+      - uses: actions/upload-artifact@v4
+        if: success() && env.HAS_UPLOAD_KEY == 'true'
+        with:
+          name: garantiledim-play-${{ github.run_number }}
+          path: play/
 
       - uses: actions/upload-artifact@v4
         if: always()
