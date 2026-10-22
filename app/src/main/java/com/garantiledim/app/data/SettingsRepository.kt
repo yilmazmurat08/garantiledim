@@ -39,6 +39,7 @@ class SettingsRepository(context: Context) {
         val notifyMinute = intPreferencesKey("notify_minute")
     }
 
+
     val settings: Flow<UserSettings> = store.data
         .catch { emit(emptyPreferences()) }
         .map { p ->

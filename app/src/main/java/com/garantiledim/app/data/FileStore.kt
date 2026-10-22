@@ -19,6 +19,7 @@ import android.webkit.MimeTypeMap
 import androidx.core.content.FileProvider
 import com.garantiledim.app.domain.Attachment
 import com.garantiledim.app.domain.Photo
+import com.garantiledim.app.i18n.Strings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -32,7 +33,10 @@ import kotlin.math.roundToInt
  * Fiş, fatura ve fotoğrafları uygulamanın kendi dizinine kopyalar.
  * Orijinal dosya hiç değiştirilmez; listelerde gösterilmek üzere ayrıca küçük bir önizleme üretilir.
  */
-class FileStore(private val context: Context) {
+class FileStore(
+    private val context: Context,
+    private val strings: () -> Strings,
+) {
 
     private val receiptsDir get() = File(context.filesDir, "receipts")
     private val photosDir get() = File(context.filesDir, "photos")
@@ -43,7 +47,7 @@ class FileStore(private val context: Context) {
     suspend fun importReceipt(uri: Uri): Attachment = withContext(Dispatchers.IO) {
         val resolver = context.contentResolver
         val mime = resolver.getType(uri) ?: "application/octet-stream"
-        val displayName = queryDisplayName(uri) ?: "fatura-${LocalDate.now()}.${extensionFor(mime, null)}"
+        val displayName = queryDisplayName(uri) ?: "${strings().receiptFilePrefix}-${LocalDate.now()}.${extensionFor(mime, null)}"
         val dest = newFile(receiptsDir, extensionFor(mime, displayName))
         copyFromUri(uri, dest)
         Attachment(
@@ -74,7 +78,7 @@ class FileStore(private val context: Context) {
         Attachment(
             path = dest.path,
             thumbPath = createThumbnail(dest, "image/jpeg"),
-            fileName = "fis-${LocalDate.now()}.jpg",
+            fileName = "${strings().cameraReceiptPrefix}-${LocalDate.now()}.jpg",
             mimeType = "image/jpeg",
             sizeBytes = dest.length(),
         )

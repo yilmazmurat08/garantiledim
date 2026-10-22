@@ -39,8 +39,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.garantiledim.app.R
 import com.garantiledim.app.domain.Attachment
-import com.garantiledim.app.domain.TrDates
-import com.garantiledim.app.domain.formatFileSize
+import com.garantiledim.app.i18n.LocalStrings
 import com.garantiledim.app.ui.theme.GColors
 import com.garantiledim.app.ui.theme.GShapes
 import com.garantiledim.app.ui.theme.GType
@@ -97,6 +96,7 @@ fun LabeledTextField(
 /** Tarih alanı: dokununca tarih seçici açılır. */
 @Composable
 fun DateField(label: String, date: LocalDate, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val s = LocalStrings.current
     Column(modifier, verticalArrangement = Arrangement.spacedBy(6.dp)) {
         FieldLabel(label)
         Row(
@@ -106,11 +106,11 @@ fun DateField(label: String, date: LocalDate, onClick: () -> Unit, modifier: Mod
                 .clip(GShapes.Field)
                 .background(GColors.Surface)
                 .border(1.dp, GColors.Outline, GShapes.Field)
-                .clickable(onClickLabel = "$label seç", role = Role.Button, onClick = onClick)
+                .clickable(onClickLabel = s.selectA11y(label), role = Role.Button, onClick = onClick)
                 .padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(TrDates.numeric(date), style = GType.Body, color = GColors.Text, modifier = Modifier.weight(1f))
+            Text(s.dateNumeric(date), style = GType.Body, color = GColors.Text, modifier = Modifier.weight(1f))
             GIcon(R.drawable.ic_calendar, tint = GColors.Lavender, size = 18.dp)
         }
     }
@@ -152,6 +152,7 @@ fun DashedActionButton(
 /** Fiş/fatura önizlemesi: resimse küçük görsel, PDF ise belge ikonu. */
 @Composable
 fun ReceiptThumbnail(attachment: Attachment, modifier: Modifier = Modifier) {
+    val s = LocalStrings.current
     Box(
         modifier = modifier
             .size(width = 52.dp, height = 64.dp)
@@ -171,7 +172,7 @@ fun ReceiptThumbnail(attachment: Attachment, modifier: Modifier = Modifier) {
         } else {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 GIcon(R.drawable.ic_file, tint = Color(0xFF6A4E96), size = 22.dp)
-                Text(if (attachment.isPdf) "PDF" else "DOSYA", style = GType.Badge.copy(fontSize = GType.Badge.fontSize * 0.8f), color = Color(0xFF6A4E96))
+                Text(if (attachment.isPdf) s.fileTypePdf else s.fileTypeFile, style = GType.Badge.copy(fontSize = GType.Badge.fontSize * 0.8f), color = Color(0xFF6A4E96))
             }
         }
     }
@@ -180,6 +181,7 @@ fun ReceiptThumbnail(attachment: Attachment, modifier: Modifier = Modifier) {
 /** Eklenmiş fiş/fatura satırı (ekleme ekranında, kaldır butonuyla). */
 @Composable
 fun AttachmentRow(attachment: Attachment, onRemove: () -> Unit, modifier: Modifier = Modifier) {
+    val s = LocalStrings.current
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -192,13 +194,13 @@ fun AttachmentRow(attachment: Attachment, onRemove: () -> Unit, modifier: Modifi
         Column(Modifier.weight(1f)) {
             Text(attachment.fileName, style = GType.BodyMedium, color = GColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(
-                "${if (attachment.isPdf) "PDF" else "Görsel"} · ${formatFileSize(attachment.sizeBytes)}",
+                "${if (attachment.isPdf) s.fileTypePdf else s.fileTypeImage} · ${s.fileSize(attachment.sizeBytes)}",
                 style = GType.Small,
                 color = GColors.TextSecondary,
             )
         }
         IconButton(onClick = onRemove) {
-            GIcon(R.drawable.ic_trash, tint = GColors.TextSecondary, size = 20.dp, contentDescription = "Fişi kaldır")
+            GIcon(R.drawable.ic_trash, tint = GColors.TextSecondary, size = 20.dp, contentDescription = s.removeReceiptA11y)
         }
     }
 }

@@ -9,8 +9,10 @@ import com.garantiledim.app.AppContainer
 import com.garantiledim.app.domain.Attachment
 import com.garantiledim.app.domain.Category
 import com.garantiledim.app.domain.DurationType
+import com.garantiledim.app.domain.FREE_PRODUCT_LIMIT
 import com.garantiledim.app.domain.Photo
 import com.garantiledim.app.domain.Product
+import com.garantiledim.app.domain.canAddProduct
 import com.garantiledim.app.domain.deadline
 import com.garantiledim.app.notifications.Reminders
 import com.garantiledim.app.ui.NEW_PRODUCT_ID
@@ -117,7 +119,7 @@ class EditProductViewModel(
             viewModelScope.launch {
                 val product = container.products.get(productId)
                 if (product == null) {
-                    _state.update { it.copy(loaded = true, message = "Ürün bulunamadı") }
+                    _state.update { it.copy(loaded = true, message = container.language.current.errorProductNotFound) }
                     return@launch
                 }
                 originalCreatedAt = product.createdAt
@@ -215,7 +217,7 @@ class EditProductViewModel(
     fun onCameraUnavailable() {
         pendingCamera?.first?.delete()
         pendingCamera = null
-        showMessage("Kamera uygulaması bulunamadı")
+        showMessage(container.language.current.cameraMissing)
     }
 
     fun removeReceipt() {
@@ -237,9 +239,10 @@ class EditProductViewModel(
     fun save() {
         val s = _state.value
         if (s.busy) return
-        val nameError = if (s.name.isBlank()) "Ürün adı boş olamaz" else null
+        val t = container.language.current
+        val nameError = if (s.name.isBlank()) t.errorNameEmpty else null
         val dateError = if (s.deliveryDate.isBefore(s.purchaseDate)) {
-            "Teslim tarihi satın alma tarihinden önce olamaz"
+            t.errorDeliveryBeforePurchase
         } else {
             null
         }
@@ -248,8 +251,8 @@ class EditProductViewModel(
             s.warrantyOverride.takeIf { s.tracksWarranty },
         ).any { it.isBefore(s.deliveryDate) }
         val periodError = when {
-            !s.tracksReturn && !s.tracksWarranty -> "En az bir süre takip edilmeli"
-            overrideBeforeDelivery -> "Bitiş tarihi teslim tarihinden önce olamaz"
+            !s.tracksReturn && !s.tracksWarranty -> t.errorNoPeriod
+            overrideBeforeDelivery -> t.errorEndBeforeDelivery
             else -> null
         }
         if (nameError != null || dateError != null || periodError != null) {
@@ -260,6 +263,12 @@ class EditProductViewModel(
         _state.update { it.copy(busy = true) }
         viewModelScope.launch {
             try {
+                if (!isEdit && !canAddProduct(container.products.count(), container.premium.isPremium.value)) {
+                    _state.update {
+                        it.copy(busy = false, message = t.errorFreeLimit(FREE_PRODUCT_LIMIT))
+                    }
+                    return@launch
+                }
                 val product = s.toProduct(id = if (isEdit) productId else 0)
                     .copy(createdAt = originalCreatedAt)
                 val id = container.products.save(product)
@@ -272,7 +281,7 @@ class EditProductViewModel(
                     it.copy(busy = false, result = if (isEdit) EditResult.Saved else EditResult.Created(id))
                 }
             } catch (e: Exception) {
-                _state.update { it.copy(busy = false, message = "Kaydedilemedi, tekrar dene") }
+                _state.update { it.copy(busy = false, message = t.errorSaveFailed) }
             }
         }
     }
@@ -315,8 +324,9 @@ class EditProductViewModel(
                     else -> _state.update { it.copy(busy = false) }
                 }
             } catch (e: Exception) {
-                val what = if (target == PickTarget.RECEIPT) "Fiş/fatura" else "Fotoğraf"
-                _state.update { it.copy(busy = false, message = "$what eklenemedi") }
+                val t = container.language.current
+                val text = if (target == PickTarget.RECEIPT) t.errorReceiptAdd else t.errorPhotoAdd
+                _state.update { it.copy(busy = false, message = text) }
             }
         }
     }

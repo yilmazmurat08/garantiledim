@@ -21,6 +21,8 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import com.garantiledim.app.domain.Category
 import com.garantiledim.app.domain.Product
+import com.garantiledim.app.i18n.LanguageChoice
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
 import org.junit.Test
@@ -91,11 +93,47 @@ class ScreenshotTourTest {
         repo.save(product("Kahve Makinesi", "Elektronik Market", Category.BEYAZ_ESYA, today.minusDays(8).minusYears(2), ret = false, war = true))
     }
 
+    private fun englishSampleData() = runBlocking {
+        val names = mapOf(
+            "Kablosuz Kulaklık" to "Wireless Headphones",
+            "Kışlık Mont" to "Winter Coat",
+            "Akıllı Saat" to "Smartwatch",
+            "Akıllı Telefon" to "Smartphone",
+            "Buzdolabı" to "Refrigerator",
+            "Kahve Makinesi" to "Coffee Machine",
+            "Oyun Konsolu" to "Game Console",
+        )
+        val stores = mapOf(
+            "Online Mağaza" to "Online Store",
+            "Moda Mağazası" to "Fashion Store",
+            "Teknoloji Market" to "Tech Market",
+            "Telefoncu" to "Phone Shop",
+            "Beyaz Eşya Bayi" to "Appliance Dealer",
+            "Elektronik Market" to "Electronics Market",
+        )
+        val repo = app.container.products
+        repo.products.first().forEach { p ->
+            repo.save(
+                p.copy(
+                    name = names[p.name] ?: p.name,
+                    store = stores[p.store] ?: p.store,
+                    receipt = p.receipt?.copy(fileName = "sample-invoice.pdf"),
+                )
+            )
+        }
+        app.container.settings.setName("Emma")
+    }
+
     @Test
     fun uygulamayiGez() {
+        // Emülatörün dili İngilizce; tur Türkçe başlar, sonda dil ayarından İngilizceye geçilir.
+        app.container.language.set(LanguageChoice.TR)
+        rule.activityRule.scenario.recreate()
         waitForText("İlk ürününü ekle")
         shot("00-ilk-acilis")
 
+        // Tur 6 ürünle gezildiği için Premium açık başlar; sonda ücretsiz sürüm ve paywall gösterilir.
+        app.container.premium.setTestState(owned = true)
         seed()
         waitForText("Günün Garantileri")
         shot("01-ana-sayfa")
@@ -157,5 +195,58 @@ class ScreenshotTourTest {
         waitForText("Garanti bitişi")
         waitForText("Oyun Konsolu")
         shot("09-kaydedilen-urun")
+
+        app.container.premium.setTestState(owned = false, price = "₺709,99")
+        rule.onNodeWithContentDescription("Geri").performClick()
+        waitForText("Günün Garantileri")
+        rule.onNodeWithText("Profil & Ayarlar").performClick()
+        waitForText("Premium'a geç")
+        shot("12-profil-premium")
+        rule.onNodeWithText("Premium'a geç").performClick()
+        waitForText("Garantiledim Premium")
+        shot("13-premium")
+        rule.onNodeWithText("Premium'u al", substring = true).performClick()
+        waitForText("Premium aktif", substring = true)
+        shot("13b-premium-aktif")
+        rule.onNodeWithText("Devam et").performClick()
+        waitForText("Yedekten geri yükle")
+
+        // İngilizce mağaza görüntüleri için örnek ürünler İngilizce adlarla yeniden adlandırılır
+        // (ürün adları kullanıcı verisidir, uygulama bunları çevirmez).
+        englishSampleData()
+
+        // Dil ayarından İngilizceye geç: ekran yeniden kurulur, tüm metinler İngilizce olur.
+        rule.onNodeWithText("Uygulama dili").performScrollTo().performClick()
+        rule.onNodeWithText("English").performClick()
+        waitForText("App language")
+        rule.onNodeWithText("App language").performScrollTo()
+        shot("20-en-profil")
+        rule.onNodeWithText("Home").performClick()
+        waitForText("Today's Warranties")
+        shot("21-en-ana-sayfa")
+        rule.onNodeWithText("My Warranties").performClick()
+        waitForText("products tracked", substring = true)
+        shot("22-en-belgelerim")
+        rule.onNodeWithText("Wireless Headphones").performClick()
+        waitForText("Last day to return")
+        shot("23-en-detay")
+        rule.onNodeWithContentDescription("Back").performClick()
+        waitForText("products tracked", substring = true)
+        rule.onNodeWithText("Agenda & Reminders").performClick()
+        waitForText("Reminder settings")
+        shot("24-en-ajanda")
+        app.container.premium.setTestState(owned = false, price = "\$9.99")
+        rule.onNodeWithText("Profile & Settings").performClick()
+        waitForText("Go Premium")
+        rule.onNodeWithText("Go Premium").performClick()
+        waitForText("Get Premium", substring = true)
+        shot("25-en-premium")
+        rule.onNodeWithText("Terms of Use").performClick()
+        waitForText("Not legal advice")
+        shot("26-en-kullanim-kosullari")
+        rule.onNodeWithContentDescription("Back").performClick()
+        rule.onNodeWithText("Privacy Policy").performClick()
+        waitForText("Summary")
+        shot("27-en-gizlilik")
     }
 }

@@ -54,9 +54,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.garantiledim.app.AppContainer
 import com.garantiledim.app.R
 import com.garantiledim.app.domain.ProductSummary
-import com.garantiledim.app.domain.TrDates
 import com.garantiledim.app.domain.hasAlert
 import com.garantiledim.app.domain.homeHighlights
+import com.garantiledim.app.i18n.LocalStrings
 import com.garantiledim.app.ui.Tab
 import com.garantiledim.app.ui.appViewModelFactory
 import com.garantiledim.app.ui.components.Avatar
@@ -87,13 +87,14 @@ class HomeViewModel(container: AppContainer) : ViewModel() {
         container.products.products,
         container.settings.settings,
         container.today.today,
-    ) { products, settings, today ->
+        container.language.strings,
+    ) { products, settings, today, s ->
         HomeUiState(
             loaded = true,
             name = settings.name,
             photoPath = settings.photo?.thumbPath ?: settings.photo?.path,
             hasAlert = hasAlert(products, today, settings.reminderLeadDays),
-            highlights = homeHighlights(products, today),
+            highlights = homeHighlights(products, today, s),
             hasProducts = products.isNotEmpty(),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
@@ -107,6 +108,7 @@ fun HomeScreen(
     onOpenLegal: (LegalDoc) -> Unit,
     viewModel: HomeViewModel = viewModel(factory = appViewModelFactory { c, _ -> HomeViewModel(c) }),
 ) {
+    val s = LocalStrings.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     if (!state.loaded) return
 
@@ -133,7 +135,7 @@ fun HomeScreen(
 
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(
-                "Önerilen İşlemler",
+                s.homeSuggested,
                 style = GType.SectionTitle,
                 color = GColors.Text,
                 modifier = Modifier.padding(horizontal = 20.dp),
@@ -146,24 +148,24 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 ActionCard(
-                    title = "Yeni Garanti Ekle",
-                    description = "Hızlıca yeni ürün ve belgesini kaydet.",
+                    title = s.actionAddTitle,
+                    description = s.actionAddBody,
                     icon = R.drawable.ic_camera,
                     badgeIcon = R.drawable.ic_camera,
                     colors = ActionColors(GColors.PastelPink, GColors.PastelPinkInner, GColors.PastelPinkBadge, GColors.PastelPinkIcon, GColors.PastelPinkText),
                     onClick = onAddProduct,
                 )
                 ActionCard(
-                    title = "Hatırlatıcı Ayarla",
-                    description = "Yaklaşan bitiş tarihleri için alarm",
+                    title = s.actionReminderTitle,
+                    description = s.actionReminderBody,
                     icon = R.drawable.ic_calendar_check,
                     badgeIcon = R.drawable.ic_bell,
                     colors = ActionColors(GColors.PastelLavender, GColors.PastelLavenderInner, GColors.PastelLavenderBadge, GColors.PastelLavenderIcon, GColors.PastelLavenderText),
                     onClick = { onOpenTab(Tab.AGENDA) },
                 )
                 ActionCard(
-                    title = "Belgeleri Düzenle",
-                    description = "Tüm kayıtları kolayca filtrele",
+                    title = s.actionDocsTitle,
+                    description = s.actionDocsBody,
                     icon = R.drawable.ic_search,
                     badgeIcon = R.drawable.ic_clock,
                     colors = ActionColors(GColors.PastelPeach, GColors.PastelPeachInner, GColors.PastelPeachBadge, GColors.PastelPeachIcon, GColors.PastelPeachText),
@@ -177,9 +179,9 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Günün Garantileri", style = GType.SectionTitle, color = GColors.Text, modifier = Modifier.weight(1f))
+                Text(s.homeToday, style = GType.SectionTitle, color = GColors.Text, modifier = Modifier.weight(1f))
                 TextButton(onClick = { onOpenTab(Tab.LIST) }) {
-                    Text("Tümü", style = GType.Label, color = GColors.Pink)
+                    Text(s.seeAll, style = GType.Label, color = GColors.Pink)
                 }
             }
             state.highlights.chunked(2).forEach { row ->
@@ -199,7 +201,7 @@ fun HomeScreen(
             }
             if (state.highlights.isEmpty()) {
                 Text(
-                    "Yaklaşan ya da yeni dolan bir süre yok. Tüm ürünlerin Garanti Belgelerim'de.",
+                    s.homeNothingUpcoming,
                     style = GType.Caption,
                     color = GColors.TextSecondary,
                 )
@@ -216,6 +218,7 @@ private fun GreetingHeader(
     onBell: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val s = LocalStrings.current
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -228,13 +231,13 @@ private fun GreetingHeader(
         Avatar(name = name, photoPath = photoPath, size = 54.dp)
         Column(Modifier.weight(1f)) {
             Text(
-                if (name.isBlank()) "Merhaba!" else "Merhaba, $name!",
+                if (name.isBlank()) s.hello else s.helloName(name),
                 style = GType.Greeting,
                 color = GColors.Text,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-            Text("Garanti sürelerini takipte kal!", style = GType.Caption.copy(fontSize = GType.Caption.fontSize * 1.08f), color = GColors.TextSecondary)
+            Text(s.tagline, style = GType.Caption.copy(fontSize = GType.Caption.fontSize * 1.08f), color = GColors.TextSecondary)
         }
         IconButton(onClick = onBell) {
             Box {
@@ -242,7 +245,7 @@ private fun GreetingHeader(
                     R.drawable.ic_bell,
                     tint = GColors.TextSecondary,
                     size = 22.dp,
-                    contentDescription = if (hasAlert) "Bildirimler, acil hatırlatma var" else "Bildirimler",
+                    contentDescription = if (hasAlert) s.notificationsUrgent else s.notifications,
                 )
                 if (hasAlert) {
                     Box(
@@ -322,8 +325,9 @@ private fun ActionCard(
 
 @Composable
 private fun HighlightCard(summary: ProductSummary, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val s = LocalStrings.current
     val product = summary.product
-    val storeOrCategory = product.store.ifBlank { product.category.label }
+    val storeOrCategory = product.store.ifBlank { s.category(product.category) }
     Column(
         modifier = modifier
             .surfaceCard(onClick = onClick)
@@ -365,7 +369,7 @@ private fun HighlightCard(summary: ProductSummary, onClick: () -> Unit, modifier
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                 GIcon(R.drawable.ic_clock, tint = GColors.TextSecondary, size = 14.dp)
                 Text(
-                    "${d.type.shortLabel} · ${TrDates.short(d.endDate)}",
+                    "${s.durationShort(d.type)} · ${s.dateShort(d.endDate)}",
                     style = GType.Small,
                     color = GColors.TextSecondary,
                     maxLines = 1,
@@ -383,6 +387,7 @@ private fun HighlightCard(summary: ProductSummary, onClick: () -> Unit, modifier
 private fun FirstRun(onAddProduct: () -> Unit, onOpenLegal: (LegalDoc) -> Unit) = BoxWithConstraints(
     Modifier.fillMaxSize().statusBarsPadding(),
 ) {
+    val s = LocalStrings.current
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -401,7 +406,7 @@ private fun FirstRun(onAddProduct: () -> Unit, onOpenLegal: (LegalDoc) -> Unit) 
         Text("Garantiledim", style = GType.Wordmark, color = GColors.Text)
         Spacer(Modifier.height(6.dp))
         Text(
-            "Garanti sürelerini takipte kal!",
+            s.tagline,
             style = GType.Body,
             color = GColors.TextSecondary,
             textAlign = TextAlign.Center,
@@ -413,7 +418,7 @@ private fun FirstRun(onAddProduct: () -> Unit, onOpenLegal: (LegalDoc) -> Unit) 
             colors = ButtonDefaults.buttonColors(containerColor = GColors.Pink, contentColor = GColors.OnPastel),
             modifier = Modifier.height(54.dp),
         ) {
-            Text("İlk ürününü ekle", style = GType.CardTitle.copy(fontSize = GType.Body.fontSize * 1.14f))
+            Text(s.firstProduct, style = GType.CardTitle.copy(fontSize = GType.Body.fontSize * 1.14f))
         }
         Spacer(Modifier.height(28.dp))
         LegalNotice(onOpenLegal)
@@ -422,17 +427,18 @@ private fun FirstRun(onAddProduct: () -> Unit, onOpenLegal: (LegalDoc) -> Unit) 
 
 @Composable
 private fun LegalNotice(onOpenLegal: (LegalDoc) -> Unit) {
+    val s = LocalStrings.current
     val link = TextLinkStyles(SpanStyle(color = GColors.Pink, fontWeight = FontWeight.Medium))
     fun AnnotatedString.Builder.docLink(doc: LegalDoc) {
-        withLink(LinkAnnotation.Clickable(doc.route, link) { onOpenLegal(doc) }) { append(doc.title) }
+        withLink(LinkAnnotation.Clickable(doc.route, link) { onOpenLegal(doc) }) { append(doc.title(s)) }
     }
     Text(
         buildAnnotatedString {
-            append("Garantiledim'i kullanarak ")
+            append(s.legalNoticePrefix)
             docLink(LegalDoc.TERMS)
-            append("'nı kabul etmiş olursun. Bilgilerin yalnızca bu telefonda saklanır; ayrıntılar ")
+            append(s.legalNoticeMiddle)
             docLink(LegalDoc.PRIVACY)
-            append("'nda.")
+            append(s.legalNoticeSuffix)
         },
         style = GType.Caption.copy(lineHeight = GType.Caption.fontSize * 1.6f),
         color = GColors.TextMuted,

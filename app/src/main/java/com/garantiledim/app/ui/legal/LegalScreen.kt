@@ -29,6 +29,9 @@ import com.garantiledim.app.R
 import com.garantiledim.app.domain.CONTACT_EMAIL
 import com.garantiledim.app.domain.LegalBlock
 import com.garantiledim.app.domain.parseLegal
+import com.garantiledim.app.i18n.AppLanguage
+import com.garantiledim.app.i18n.LocalStrings
+import com.garantiledim.app.i18n.Strings
 import com.garantiledim.app.ui.components.BackTopBar
 import com.garantiledim.app.ui.components.EmptyMessage
 import com.garantiledim.app.ui.components.GIcon
@@ -38,9 +41,13 @@ import com.garantiledim.app.ui.theme.GType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-enum class LegalDoc(val route: String, val title: String, val asset: String) {
-    PRIVACY("gizlilik", "Gizlilik Politikası", "legal/gizlilik-politikasi.md"),
-    TERMS("kosullar", "Kullanım Koşulları", "legal/kullanim-kosullari.md"),
+enum class LegalDoc(val route: String, private val trAsset: String, private val enAsset: String) {
+    PRIVACY("gizlilik", "legal/gizlilik-politikasi.md", "legal/en/privacy-policy.md"),
+    TERMS("kosullar", "legal/kullanim-kosullari.md", "legal/en/terms-of-use.md");
+
+    fun asset(language: AppLanguage): String = if (language == AppLanguage.TR) trAsset else enAsset
+
+    fun title(s: Strings): String = if (this == PRIVACY) s.privacyPolicy else s.termsOfUse
 }
 
 fun sendContactEmail(context: Context, subject: String) {
@@ -55,22 +62,24 @@ fun sendContactEmail(context: Context, subject: String) {
 
 @Composable
 fun LegalScreen(doc: LegalDoc, onBack: () -> Unit) {
+    val s = LocalStrings.current
     val context = LocalContext.current
-    val blocks by produceState<List<LegalBlock>?>(initialValue = null, doc) {
+    val language = LocalStrings.current.language
+    val blocks by produceState<List<LegalBlock>?>(initialValue = null, doc, language) {
         value = withContext(Dispatchers.IO) {
-            runCatching { context.assets.open(doc.asset).bufferedReader().use { it.readText() } }
+            runCatching { context.assets.open(doc.asset(language)).bufferedReader().use { it.readText() } }
                 .map(::parseLegal)
                 .getOrDefault(emptyList())
         }
     }
 
     Column(Modifier.fillMaxSize()) {
-        BackTopBar(title = doc.title, onBack = onBack, centered = true)
+        BackTopBar(title = doc.title(s), onBack = onBack, centered = true)
         val content = blocks ?: return@Column
         if (content.isEmpty()) {
             EmptyMessage(
-                title = "Metin açılamadı",
-                body = "Lütfen uygulamayı güncelleyin ya da $CONTACT_EMAIL adresine yazın.",
+                title = s.legalLoadErrorTitle,
+                body = s.legalLoadErrorBody(CONTACT_EMAIL),
                 modifier = Modifier.padding(20.dp),
             )
             return@Column
@@ -108,14 +117,14 @@ fun LegalScreen(doc: LegalDoc, onBack: () -> Unit) {
             }
             item {
                 OutlinedButton(
-                    onClick = { sendContactEmail(context, "Garantiledim - ${doc.title}") },
+                    onClick = { sendContactEmail(context, "Garantiledim - ${doc.title(s)}") },
                     shape = GShapes.Field,
                     border = BorderStroke(1.dp, GColors.Outline),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = GColors.Text),
                     modifier = Modifier.fillMaxWidth().padding(top = 16.dp).height(52.dp),
                 ) {
                     GIcon(R.drawable.ic_document, tint = GColors.Lavender, size = 20.dp)
-                    Text("  Soru sor: $CONTACT_EMAIL", style = GType.Label)
+                    Text("  " + s.askQuestion(CONTACT_EMAIL), style = GType.Label)
                 }
             }
         }

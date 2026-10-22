@@ -30,6 +30,9 @@ interface ProductDao {
     @Insert
     suspend fun insert(product: ProductEntity): Long
 
+    @Query("DELETE FROM products")
+    suspend fun deleteAll()
+
     @Update
     suspend fun update(product: ProductEntity)
 

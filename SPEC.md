@@ -184,7 +184,8 @@ Düzenleme modunda aynı ekran mevcut değerlerle dolu açılır. Bir sürenin b
 - **Hatırlatmalar:** Hatırlatma başlangıcı (varsayılan "Bitişten 3 gün önce"), Bildirim saati (varsayılan 10:00), Bildirim izni durumu (Açık yeşil / Kapalı pembe, kapalıysa dokununca sistem ayarına gider)
 - **Varsayılan süreler:** İade hakkı 14 gün, Garanti 2 yıl (bilgi amaçlı)
 - **Yasal:** "Gizlilik Politikası" ve "Kullanım Koşulları" ayrı satırlar; her biri kendi ekranında açılır (madde 11)
-- **Diğer:** Bize yazın (iletişim e-postası, e-posta uygulamasını açar), Hakkında (sürüm). Premium ve yedekleme hazır olana kadar menüde gösterilmez (Google Play'in "çalışmayan özellik" kuralı)
+- **Diğer:** Bize yazın (iletişim e-postası, e-posta uygulamasını açar), Hakkında (sürüm).
+- **Premium** ve **Yedekleme** bölümleri profil kartının hemen altındadır (madde 10)
 
 ## 5. Veri modeli
 
@@ -330,41 +331,56 @@ Scroll akıcılığı için:
 - Kalan gün ve durum hesapları ViewModel'de yapılıp UI'a hazır, immutable (`@Immutable`) UI modelleriyle verilmeli ki Compose gereksiz yeniden oluşturma yapmasın
 - Gün değiştiğinde (gece yarısı veya uygulama ön plana geldiğinde) kalan gün değerleri yeniden hesaplanmalı
 
-## 10. Fiyatlandırma (freemium + deneme)
+## 10. Fiyatlandırma: ücretsiz + Premium (tek seferlik)
 
-> Bu bölüm son adımda yeniden tasarlanacak. Aşağıdakiler şimdilik taslaktır.
+**Ücretsiz:**
+- En fazla 3 ürün (`FREE_PRODUCT_LIMIT`). 4. ürün eklenmek istendiğinde ekleme ekranı yerine Premium ekranı açılır; kayıt sırasında da kontrol edilir
+- Hatırlatmalar, fiş/fatura, indirme, hatırlatma ayarları dahil diğer tüm özellikler
 
-**Kalıcı ücretsiz:**
-- 3 ürüne kadar takip
-- Sadece bu 3 ürün için bildirim (madde 7'deki hatırlatma + süre doldu bildirimi)
-- Manuel fiş/fatura ekleme
+**Premium (Google Play Faturalandırma, tek seferlik "ömür boyu" ürün `garantiledim_premium`):**
+- Sınırsız ürün ve hatırlatma
+- Yedekle / Geri yükle: ürünler, fiş/faturalar, ürün fotoğrafları, ad ve hatırlatma ayarları tek .zip dosyasına yazılır (`garantiledim.json` + `files/receipts|photos|thumbs/…`). Kullanıcı dosyayı istediği yere kaydeder (Drive dahil); geri yükleme onay sorulduktan sonra telefondaki ürünleri yedektekilerle değiştirir. Yalnızca beklenen klasörlerdeki düz dosya adları kabul edilir
+- Abonelik ve deneme süresi yok (Play tek seferlik üründe deneme sunmaz; ücretsiz 3 ürün deneme işlevi görür)
 
-**15 günlük ücretsiz deneme (yeni kullanıcıda otomatik başlar):**
-- Deneme boyunca tüm premium özellikler açık: sınırsız ürün, yedekleme, PDF dışa aktarma
-- Deneme bitince abone olunmazsa kalıcı ücretsiz katmana döner
-- 3'ten fazla eklenen ürünler **silinmez, kilitlenir** (salt-okunur listelenir); premium'a geçilince tekrar açılır — veri kaybı kullanıcıda kötü izlenim bırakır. Kilit durumu veritabanında saklanmaz, abonelik durumuna ve ürünlerin eklenme sırasına göre çalışma anında hesaplanır
+**Satın alma durumu ve güvenlik:**
+- Sunucu yoktur. Açılışta ve Premium ekranında Play'den satın almalar sorgulanır
+- Premium yalnızca Google Play'in uygulamaya özel lisans anahtarıyla (Play Console > Lisanslama, `garantiledim.playLicenseKey`) imzası doğrulanan, bu pakete ve `garantiledim_premium` ürününe ait, ödemesi tamamlanmış satın alma kaydıyla açılır (`PurchaseVerifier`, SHA1withRSA). Sahte faturalandırma servisleri (Lucky Patcher vb.) geçerli imza üretemez. Anahtar yoksa Play AAB'si derlenmez
+- Cihazda "premium" bayrağı tutulmaz; Play'in imzalı kaydı ayrı bir DataStore dosyasında (`premium`) saklanır ve her açılışta imzası yeniden doğrulanır. Elle değiştirilen kayıt geçersiz olur. Çevrimdışı açılışta saklı imzalı kayıt geçerlidir
+- Kayıt Google yedeğine ve telefon aktarımına girmez; başka cihaza kopyalanamaz, yeni telefonda Play'den yeniden doğrulanır
+- Süre ya da tarih kullanılmaz (deneme yok, ömür boyu); telefonun saatini ileri/geri almak bir şey açmaz ya da kapatmaz. Ücretsiz sınır ürün sayısına bağlıdır, tarihe değil
+- Test durumu yalnızca debug sürümde ayarlanabilir
+- Sınır: sunucu doğrulaması olmayan her uygulama gibi, uygulama dosyası değiştirilip yeniden imzalanırsa denetimler atlatılabilir (root/korsan APK). Bu, kodu küçültme ve gizleme (R8) ile zorlaştırılır; tamamen kapatmak için sunucu tarafı doğrulama gerekir
+- Satın alma 3 gün içinde onaylanmazsa Play iade eder; uygulama satın almayı görür görmez onaylar (`acknowledgePurchase`). Bekleyen ödeme (PENDING) tamamlanınca Premium açılır
+- İade edilen satın alma sorguda görünmez ve Premium kapanır. Ürünler silinmez: eklenme sırasına göre ilk 3 ürün dışındakiler kilitlenir (hatırlatma gönderilmez, detayda "Bu ürünün hatırlatması kapalı" ve Premium bağlantısı). Kilit veritabanında tutulmaz, her seferinde hesaplanır
+- "Satın alımı geri yükle": aynı Google hesabındaki satın almayı yeniden sorgular (yeni telefon)
 
-**Premium (abonelik veya tek seferlik):**
-- Sınırsız ürün takibi ve bildirim
-- Yedekleme: kullanıcının kendi Google Drive'ındaki uygulamaya özel klasöre (appDataFolder) şifreli yedek; uygulamaya ait sunucu kullanılmaz (madde 1 ile uyumlu)
-- Özelleştirilebilir hatırlatma başlangıcı (ücretsiz katmanda 3 gün sabit)
-- PDF rapor / dışa aktarma
+**Premium ekranı (paywall):**
+- Logo, "Garantiledim Premium", açılış nedenine göre açıklama (ürün sınırı / yedekleme / genel)
+- Dört madde: Sınırsız ürün, Her ürüne hatırlatma, Yedekle ve taşı, Tek seferlik ödeme
+- Pembe buton "Premium'u al · {Play'in biçimlendirdiği fiyat}". Altında "Tek seferlik ödeme · Abonelik değildir, otomatik yenilenmez. Ödeme Google Play hesabından alınır.", "Satın alımı geri yükle", Kullanım Koşulları ve Gizlilik Politikası bağlantıları
+- Play'e ulaşılamazsa "Tekrar dene" ve açıklama; satın alındıktan sonra "Premium aktif" ve "Devam et"
+- Fiyat kodda yazılmaz, Play Console'dan gelir. Türkiye fiyatı ₺709,99: KDV (%20) ve Google'ın %15 hizmet ücretinden sonra satış başına net ~₺500 (hesap: play/README.md)
 
-**Fiyatlar (başlangıç noktası, Play Console bölgesel fiyatlandırmasıyla teyit edilmeli):**
-- Aylık: ₺39,99
-- Yıllık: ₺299,99 (aylık ödemeye göre ~%37 indirim)
-- Tek seferlik "ömür boyu": ₺599,99
+**Profil & Ayarlar:** "Premium" bölümü (aktifse rozet, değilse "Premium'a geç") ve "Yedekleme" bölümü (Yedekle, Yedekten geri yükle; Premium değilse "Premium" rozeti ve dokununca Premium ekranı).
 
-Reklamsız, sade abonelik modeli önerilir — güven odaklı bu tür bir uygulamada reklam marka algısını zedeler. TL'deki enflasyon nedeniyle fiyatların periyodik gözden geçirilmesi gerekir.
-
-**Play Store uyumluluğu:** Google Play, deneme süreli aboneliklerde kullanıcı onay vermeden önce süreyi, ücreti, neyin dahil olduğunu ve otomatik ücretli aboneliğe ne zaman geçeceğini açıkça göstermeyi şart koşuyor; aksi halde uygulama reddedilebilir. Yükseltme/deneme başlatma ekranında bu bilgiler net görünmeli.
+Reklam yoktur. Google Play Faturalandırma kitaplığı internet izni ekler ve kendi tanılama bilgilerini Google'a gönderir; gizlilik politikası ve Veri güvenliği formu buna göre yazılır.
 
 ## 11. Gizlilik politikası ve kullanım koşulları
 
 - Metinler tek kaynaktan gelir: `app/src/main/assets/legal/gizlilik-politikasi.md` ve `kullanim-kosullari.md`. Uygulama içindeki ekranlar ve Play Console'a verilecek herkese açık bağlantı aynı dosyaları gösterir
 - Geliştirici adı "Lusnika" (uygulamanın adı Garantiledim), iletişim e-postası yilmazmurat08@gmail.com
-- Gizlilik politikası uygulamanın gerçek davranışını anlatır: hesap yok, internet izni yok, veriler yalnızca cihazda; izinler (bildirim, Android 9 ve öncesinde depolama, WorkManager'ın arka plan izinleri) ve nedenleri; İndirilenler'e aktarılan kopyalar; Android otomatik yedeklemesi; KVKK; silme yolları
+- Gizlilik politikası uygulamanın gerçek davranışını anlatır: hesap yok, uygulamanın sunucusu yok, veriler yalnızca cihazda; izinler (bildirim, Android 9 ve öncesinde depolama, WorkManager'ın arka plan izinleri, Faturalandırma kitaplığının internet ve Billing izinleri) ve nedenleri; Premium satın alma ve yedek dosyası; İndirilenler'e aktarılan kopyalar; Android otomatik yedeklemesi; KVKK; silme yolları
 - Kullanım koşulları: hukuki tavsiye olmadığı (6502 sayılı Kanun'a dayalı varsayılan süreler), bildirimlerin garanti edilmediği, verilerin cihazda tutulduğu ve yedek sorumluluğu, sorumluluğun sınırlandırılması, uygulanacak hukuk
 - Kullanım koşulları ve gizlilik politikası bağlantıları ilk açılış ekranında da gösterilir (madde 4.1)
 - Uygulamaya internet, analiz ya da ödeme özelliği eklendiğinde iki metin de güncellenmeli ve yürürlük tarihi değiştirilmeli
+
+## 12. Dil desteği (Türkçe / İngilizce)
+
+- Uygulamadaki tüm metinler (ekranlar, mesajlar, bildirimler, tarih biçimleri, Premium ekranı, gizlilik politikası ve kullanım koşulları) Türkçe ve İngilizcedir
+- Profil & Ayarlar > Dil > **Uygulama dili**: Sistem dili / Türkçe / English. Varsayılan "Sistem dili": telefon dili Türkçeyse Türkçe, diğer tüm dillerde İngilizce. Seçim SharedPreferences'ta tutulur; değişince ekran yeniden kurulur (tarih seçici gibi sistem bileşenleri de seçilen dilde açılır) ve bildirim kanalının adı güncellenir
+- Metinler `i18n` paketinde tek bir `Strings` arayüzünde toplanır; `TrStrings` ve `EnStrings` bunu eksiksiz uygular, çevirisi eksik metin derlemeyi durdurur. Ekranlar `LocalStrings`, ViewModel'ler ve arka plan işleri `container.language` üzerinden okur
+- Tarih biçimleri: Türkçe "5 Eki 2026", "5 Ekim 2026, Pazartesi", "05.10.2026"; İngilizce "Oct 5, 2026", "Monday, October 5, 2026". İngilizcede tekil/çoğul ayrımı yapılır ("1 day left", "2 days left")
+- Arama büyük/küçük harf dönüşümünü uygulama diline göre yapar (Türkçede I/ı, İ/i)
+- Yasal metinler: `assets/legal/` (Türkçe) ve `assets/legal/en/` (İngilizce); iki dilde aynı bölüm sayısı birim testiyle denetlenir
+- Ürün adları ve mağaza adları kullanıcının girdiği gibi kalır, çevrilmez
 

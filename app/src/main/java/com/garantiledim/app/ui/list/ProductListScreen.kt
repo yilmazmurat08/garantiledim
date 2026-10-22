@@ -33,9 +33,9 @@ import com.garantiledim.app.AppContainer
 import com.garantiledim.app.R
 import com.garantiledim.app.domain.ProductFilter
 import com.garantiledim.app.domain.ProductSummary
-import com.garantiledim.app.domain.TrDates
 import com.garantiledim.app.domain.filterProducts
 import com.garantiledim.app.domain.sortProducts
+import com.garantiledim.app.i18n.LocalStrings
 import com.garantiledim.app.ui.appViewModelFactory
 import com.garantiledim.app.ui.components.EmptyMessage
 import com.garantiledim.app.ui.components.GIcon
@@ -69,8 +69,9 @@ class ProductListViewModel(container: AppContainer) : ViewModel() {
         container.today.today,
         query,
         filter,
-    ) { products, today, q, f ->
-        val filtered = filterProducts(sortProducts(products, today), f, q, today)
+        container.language.strings,
+    ) { products, today, q, f, s ->
+        val filtered = filterProducts(sortProducts(products, today, s), f, q, today, s.locale)
         ListUiState(loaded = true, total = products.size, active = filtered.active, expired = filtered.expired)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), ListUiState())
 }
@@ -81,6 +82,7 @@ fun ProductListScreen(
     onOpenProduct: (Long) -> Unit,
     viewModel: ProductListViewModel = viewModel(factory = appViewModelFactory { c, _ -> ProductListViewModel(c) }),
 ) {
+    val s = LocalStrings.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val query by viewModel.query.collectAsStateWithLifecycle()
     val filter by viewModel.filter.collectAsStateWithLifecycle()
@@ -93,15 +95,15 @@ fun ProductListScreen(
         ) {
             item(key = "header") {
                 Column {
-                    Text("Garanti Belgelerim", style = GType.ScreenTitle, color = GColors.Text)
-                    Text("${state.total} ürün takip ediliyor", style = GType.Caption.copy(fontSize = GType.Caption.fontSize * 1.08f), color = GColors.TextSecondary)
+                    Text(s.tabList, style = GType.ScreenTitle, color = GColors.Text)
+                    Text(s.productsTracked(state.total), style = GType.Caption.copy(fontSize = GType.Caption.fontSize * 1.08f), color = GColors.TextSecondary)
                 }
             }
             item(key = "search") {
                 TextField(
                     value = query,
                     onValueChange = { viewModel.query.value = it },
-                    placeholder = { Text("Ürün veya mağaza ara", style = GType.Body) },
+                    placeholder = { Text(s.searchHint, style = GType.Body) },
                     leadingIcon = { GIcon(R.drawable.ic_search, tint = GColors.TextMuted, size = 20.dp) },
                     singleLine = true,
                     textStyle = GType.Body,
@@ -126,7 +128,7 @@ fun ProductListScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     ProductFilter.entries.forEach { f ->
-                        Pill(text = f.label, selected = f == filter, onClick = { viewModel.filter.value = f })
+                        Pill(text = s.filter(f), selected = f == filter, onClick = { viewModel.filter.value = f })
                     }
                 }
             }
@@ -134,16 +136,16 @@ fun ProductListScreen(
             if (state.loaded && state.total == 0) {
                 item(key = "empty") {
                     EmptyMessage(
-                        title = "Henüz ürün yok",
-                        body = "Sağ alttaki + ile ilk ürününü ve faturasını ekle.",
+                        title = s.noProductsTitle,
+                        body = s.noProductsBody,
                         modifier = Modifier.padding(top = 8.dp),
                     )
                 }
             } else if (state.loaded && state.active.isEmpty() && state.expired.isEmpty()) {
                 item(key = "no-match") {
                     EmptyMessage(
-                        title = "Sonuç yok",
-                        body = "Bu filtreye uyan ürün yok.",
+                        title = s.noMatchTitle,
+                        body = s.noMatchBody,
                         modifier = Modifier.padding(top = 8.dp),
                     )
                 }
@@ -154,7 +156,7 @@ fun ProductListScreen(
             }
             if (state.expired.isNotEmpty()) {
                 item(key = "expired-header") {
-                    SectionLabel("Süresi dolanlar", Modifier.padding(start = 4.dp, top = 6.dp))
+                    SectionLabel(s.expiredSection, Modifier.padding(start = 4.dp, top = 6.dp))
                 }
                 items(state.expired, key = { it.product.id }) { summary ->
                     ProductRow(summary, onClick = { onOpenProduct(summary.product.id) })
@@ -172,13 +174,14 @@ fun ProductListScreen(
                 .padding(end = 20.dp, bottom = 16.dp)
                 .size(58.dp),
         ) {
-            GIcon(R.drawable.ic_plus, tint = GColors.OnPastel, size = 26.dp, contentDescription = "Yeni garanti ekle")
+            GIcon(R.drawable.ic_plus, tint = GColors.OnPastel, size = 26.dp, contentDescription = s.addWarrantyA11y)
         }
     }
 }
 
 @Composable
 private fun ProductRow(summary: ProductSummary, onClick: () -> Unit) {
+    val s = LocalStrings.current
     val product = summary.product
     Row(
         modifier = Modifier
@@ -198,7 +201,7 @@ private fun ProductRow(summary: ProductSummary, onClick: () -> Unit) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(product.name, style = GType.CardTitle, color = GColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(
-                listOf(product.store, product.category.label).filter { it.isNotBlank() }.joinToString(" · "),
+                listOf(product.store, s.category(product.category)).filter { it.isNotBlank() }.joinToString(" · "),
                 style = GType.Caption,
                 color = GColors.TextSecondary,
                 maxLines = 1,
@@ -206,7 +209,7 @@ private fun ProductRow(summary: ProductSummary, onClick: () -> Unit) {
             )
             summary.primary?.let { d ->
                 Text(
-                    "${d.type.label} · ${TrDates.short(d.endDate)}",
+                    "${s.duration(d.type)} · ${s.dateShort(d.endDate)}",
                     style = GType.Small.copy(fontWeight = GType.Label.fontWeight),
                     color = GColors.Lavender,
                 )

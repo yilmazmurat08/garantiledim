@@ -9,6 +9,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +30,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -49,17 +51,18 @@ import com.garantiledim.app.AppContainer
 import com.garantiledim.app.R
 import com.garantiledim.app.domain.Attachment
 import com.garantiledim.app.domain.Deadline
+import com.garantiledim.app.domain.FREE_PRODUCT_LIMIT
 import com.garantiledim.app.domain.Product
-import com.garantiledim.app.domain.TrDates
 import com.garantiledim.app.domain.Urgency
 import com.garantiledim.app.domain.daysRemaining
 import com.garantiledim.app.domain.deadlines
 import com.garantiledim.app.domain.elapsedDescription
 import com.garantiledim.app.domain.elapsedFraction
-import com.garantiledim.app.domain.formatFileSize
 import com.garantiledim.app.domain.isExpired
+import com.garantiledim.app.domain.lockedProductIds
 import com.garantiledim.app.domain.remainingLabel
 import com.garantiledim.app.domain.urgencyOf
+import com.garantiledim.app.i18n.LocalStrings
 import com.garantiledim.app.ui.appViewModelFactory
 import com.garantiledim.app.ui.components.BackTopBar
 import com.garantiledim.app.ui.components.DashedActionButton
@@ -98,6 +101,8 @@ data class DetailUiState(
     val deadlines: List<DeadlineUi> = emptyList(),
     /** Fiş kayıtlı ama dosyası bu telefonda yok (örneğin bulut yedeğinden geri yüklendi). */
     val receiptMissing: Boolean = false,
+    /** Ücretsiz sınırı aştığı için hatırlatması kapalı (SPEC.md madde 10). */
+    val locked: Boolean = false,
     val message: String? = null,
 )
 
@@ -108,11 +113,19 @@ class ProductDetailViewModel(
     private val id: Long = checkNotNull(handle.get<Long>("id"))
     private val message = MutableStateFlow<String?>(null)
 
+    /** Kilit durumu ve metinler (combine en fazla beş akış aldığı için ayrı birleştirilir). */
+    private val context = combine(
+        container.products.products,
+        container.premium.isPremium,
+        container.language.strings,
+    ) { all, premium, s -> Triple(all, premium, s) }
+
     val state: StateFlow<DetailUiState> = combine(
         container.products.product(id),
         container.today.today,
         message,
-    ) { product, today, msg ->
+        context,
+    ) { product, today, msg, (all, premium, s) ->
         DetailUiState(
             loaded = true,
             product = product,
@@ -123,12 +136,13 @@ class ProductDetailViewModel(
                     DeadlineUi(
                         deadline = d,
                         urgency = urgencyOf(daysRemaining(d.endDate, today)),
-                        label = remainingLabel(d.endDate, today),
+                        label = remainingLabel(d.endDate, today, s),
                         fraction = elapsedFraction(d, today),
-                        description = elapsedDescription(d, today),
+                        description = elapsedDescription(d, today, s),
                     )
                 },
             receiptMissing = product?.receipt?.let { !File(it.path).exists() } == true,
+            locked = id in lockedProductIds(all, premium),
             message = msg,
         )
     }.flowOn(Dispatchers.IO).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DetailUiState())
@@ -138,9 +152,9 @@ class ProductDetailViewModel(
         viewModelScope.launch {
             message.value = try {
                 container.files.exportToDownloads(receipt)
-                "Fatura İndirilenler klasörüne kaydedildi"
+                container.language.current.receiptSaved
             } catch (e: Exception) {
-                "Dosya indirilemedi"
+                container.language.current.receiptSaveFailed
             }
         }
     }
@@ -161,10 +175,12 @@ class ProductDetailViewModel(
 
 @Composable
 fun ProductDetailScreen(
+    onOpenPremium: () -> Unit,
     onBack: () -> Unit,
     onEdit: (Long) -> Unit,
     viewModel: ProductDetailViewModel = viewModel(factory = appViewModelFactory { c, h -> ProductDetailViewModel(c, h) }),
 ) {
+    val s = LocalStrings.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val snackbar = remember { SnackbarHostState() }
@@ -177,7 +193,7 @@ fun ProductDetailScreen(
     }
 
     val storagePermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (granted) viewModel.download() else viewModel.showMessage("İndirmek için depolama izni gerekiyor")
+        if (granted) viewModel.download() else viewModel.showMessage(s.storagePermissionNeeded)
     }
     val onDownload = {
         val needsPermission = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
@@ -193,18 +209,18 @@ fun ProductDetailScreen(
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
             val product = state.product
-            BackTopBar(title = "Ürün Detayı", onBack = onBack, centered = true) {
+            BackTopBar(title = s.detailTitle, onBack = onBack, centered = true) {
                 if (product != null) {
                     IconButton(onClick = { onEdit(product.id) }) {
-                        GIcon(R.drawable.ic_edit, tint = GColors.TextSecondary, size = 20.dp, contentDescription = "Düzenle")
+                        GIcon(R.drawable.ic_edit, tint = GColors.TextSecondary, size = 20.dp, contentDescription = s.edit)
                     }
                 }
             }
             if (!state.loaded) return@Column
             if (product == null) {
                 EmptyMessage(
-                    title = "Ürün bulunamadı",
-                    body = "Bu ürün silinmiş olabilir.",
+                    title = s.productNotFoundTitle,
+                    body = s.productNotFoundBody,
                     modifier = Modifier.padding(20.dp),
                 )
                 return@Column
@@ -229,17 +245,19 @@ fun ProductDetailScreen(
                 Column {
                     Text(product.name, style = GType.ScreenTitle, color = GColors.Text)
                     Text(
-                        listOf(product.store, product.category.label).filter { it.isNotBlank() }.joinToString(" · "),
+                        listOf(product.store, s.category(product.category)).filter { it.isNotBlank() }.joinToString(" · "),
                         style = GType.Caption.copy(fontSize = GType.Caption.fontSize * 1.08f),
                         color = GColors.TextSecondary,
                     )
                 }
 
+                if (state.locked) LockedBanner(onOpenPremium)
+
                 state.deadlines.forEach { DeadlineCard(it) }
 
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    InfoBox("Satın alma", TrDates.numeric(product.purchaseDate), Modifier.weight(1f))
-                    InfoBox("Teslim", TrDates.numeric(product.deliveryDate), Modifier.weight(1f))
+                    InfoBox(s.purchaseDate, s.dateNumeric(product.purchaseDate), Modifier.weight(1f))
+                    InfoBox(s.deliveryDate, s.dateNumeric(product.deliveryDate), Modifier.weight(1f))
                 }
 
                 val receipt = product.receipt
@@ -252,14 +270,14 @@ fun ProductDetailScreen(
                             try {
                                 context.startActivity(viewModel.receiptViewIntent(receipt))
                             } catch (e: ActivityNotFoundException) {
-                                viewModel.showMessage("Bu dosyayı açacak uygulama bulunamadı")
+                                viewModel.showMessage(s.noAppToOpen)
                             }
                         },
                         onDownload = onDownload,
                     )
                 } else {
                     DashedActionButton(
-                        text = "Fiş / fatura ekle",
+                        text = s.addReceipt,
                         icon = R.drawable.ic_plus,
                         onClick = { onEdit(product.id) },
                         modifier = Modifier.fillMaxWidth(),
@@ -280,6 +298,7 @@ fun ProductDetailScreen(
 
 @Composable
 private fun DeadlineCard(ui: DeadlineUi) {
+    val s = LocalStrings.current
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -289,9 +308,9 @@ private fun DeadlineCard(ui: DeadlineUi) {
     ) {
         Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Column(Modifier.weight(1f)) {
-                Text(ui.deadline.type.endLabel, style = GType.Caption, color = GColors.TextSecondary)
+                Text(s.durationEnd(ui.deadline.type), style = GType.Caption, color = GColors.TextSecondary)
                 Text(
-                    TrDates.long(ui.deadline.endDate),
+                    s.dateLong(ui.deadline.endDate),
                     style = GType.SectionTitle.copy(lineHeight = GType.SectionTitle.fontSize * 1.45f),
                     color = GColors.Text,
                 )
@@ -318,6 +337,33 @@ private fun DeadlineCard(ui: DeadlineUi) {
 }
 
 @Composable
+private fun LockedBanner(onOpenPremium: () -> Unit) {
+    val s = LocalStrings.current
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .surfaceCard()
+            .border(1.dp, GColors.Warning.copy(alpha = 0.5f), GShapes.Card)
+            .padding(start = 14.dp, top = 12.dp, bottom = 12.dp, end = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        GIcon(R.drawable.ic_lock, tint = GColors.Warning, size = 22.dp)
+        Column(Modifier.weight(1f)) {
+            Text(s.lockedTitle, style = GType.CardTitle, color = GColors.Text)
+            Text(
+                s.lockedBody(FREE_PRODUCT_LIMIT),
+                style = GType.Small,
+                color = GColors.TextSecondary,
+            )
+        }
+        TextButton(onClick = onOpenPremium) {
+            Text(s.premium, style = GType.Label.copy(fontWeight = GType.Badge.fontWeight), color = GColors.Pink)
+        }
+    }
+}
+
+@Composable
 private fun InfoBox(label: String, value: String, modifier: Modifier = Modifier) {
     Column(modifier.surfaceCard(GShapes.Field).padding(horizontal = 12.dp, vertical = 10.dp)) {
         Text(label, style = GType.Small, color = GColors.TextSecondary)
@@ -333,6 +379,7 @@ private fun ReceiptCard(
     onOpen: () -> Unit,
     onDownload: () -> Unit,
 ) {
+    val s = LocalStrings.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -341,14 +388,14 @@ private fun ReceiptCard(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        ReceiptThumbnail(receipt, Modifier.clickable(enabled = !missing, onClickLabel = "Faturayı aç", onClick = onOpen))
+        ReceiptThumbnail(receipt, Modifier.clickable(enabled = !missing, onClickLabel = s.openReceiptA11y, onClick = onOpen))
         Column(Modifier.weight(1f)) {
             Text(receipt.fileName, style = GType.BodyMedium, color = GColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(
                 if (missing) {
-                    "Dosya bu telefonda yok, yeniden ekleyebilirsin"
+                    s.receiptMissing
                 } else {
-                    "${if (receipt.isPdf) "PDF" else "Görsel"} · ${formatFileSize(receipt.sizeBytes)} · orijinal"
+                    "${if (receipt.isPdf) s.fileTypePdf else s.fileTypeImage} · ${s.fileSize(receipt.sizeBytes)} · ${s.original}"
                 },
                 style = GType.Small,
                 color = if (missing) GColors.Warning else GColors.TextSecondary,
@@ -363,7 +410,7 @@ private fun ReceiptCard(
                 contentPadding = PaddingValues(horizontal = 12.dp),
                 modifier = Modifier.height(44.dp),
             ) {
-                Text("Ekle", style = GType.Label.copy(fontWeight = GType.Badge.fontWeight))
+                Text(s.add, style = GType.Label.copy(fontWeight = GType.Badge.fontWeight))
             }
             return@Row
         }
@@ -376,7 +423,7 @@ private fun ReceiptCard(
             modifier = Modifier.height(44.dp),
         ) {
             GIcon(R.drawable.ic_download, tint = GColors.Pink, size = 18.dp)
-            Text(" İndir", style = GType.Label.copy(fontWeight = GType.Badge.fontWeight))
+            Text(" " + s.download, style = GType.Label.copy(fontWeight = GType.Badge.fontWeight))
         }
     }
 }

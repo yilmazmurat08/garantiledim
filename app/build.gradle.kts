@@ -11,6 +11,11 @@ plugins {
 // eskisinin üzerine kurulabilsin diye artar.
 val buildNumber = (System.getenv("GITHUB_RUN_NUMBER") ?: System.getenv("BUILD_NUMBER"))?.toIntOrNull() ?: 1
 
+// Play Console > Para kazanma kurulumu > Lisanslama'daki Base64 kodlu RSA genel anahtarı. Satın almaların
+// Google Play tarafından imzalandığını cihazda doğrulamak için kullanılır. Genel anahtardır, gizli değildir.
+val playLicenseKey: String = (System.getenv("PLAY_LICENSE_KEY")?.takeIf { it.isNotBlank() } ?: (findProperty("garantiledim.playLicenseKey") as String?))
+    .orEmpty().replace(Regex("\\s"), "")
+
 // Play yükleme anahtarının yolu; verilmezse release test anahtarıyla imzalanır.
 val uploadKeystore: String? = System.getenv("UPLOAD_KEYSTORE")?.takeIf { it.isNotBlank() }
 
@@ -26,6 +31,7 @@ android {
         versionCode = buildNumber
         versionName = "1.0.$buildNumber"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "PLAY_LICENSE_KEY", "\"$playLicenseKey\"")
     }
 
     signingConfigs {
@@ -108,6 +114,7 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.work.runtime)
     implementation(libs.coil.compose)
+    implementation(libs.play.billing)
 
     testImplementation(libs.junit)
 
@@ -118,4 +125,17 @@ dependencies {
     androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(libs.androidx.work.testing)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+}
+
+// Play'e yüklenecek AAB lisans anahtarı olmadan üretilmez: anahtarsız sürümde satın almalar doğrulanamaz
+// ve Premium hiç açılmaz.
+tasks.matching { it.name == "bundleRelease" }.configureEach {
+    doFirst {
+        if (playLicenseKey.isBlank()) {
+            throw GradleException(
+                "Play lisans anahtarı eksik: gradle.properties içindeki garantiledim.playLicenseKey " +
+                    "ya da PLAY_LICENSE_KEY ortam değişkeni (Play Console > Para kazanma kurulumu > Lisanslama)."
+            )
+        }
+    }
 }

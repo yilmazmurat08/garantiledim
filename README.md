@@ -1,6 +1,6 @@
 # Garantiledim
 
-Satın alınan ürünlerin iade hakkı ve garanti sürelerini tek yerde takip eden Android uygulaması. Hesap ya da sunucu gerektirmez; tüm veriler cihazda tutulur.
+Satın alınan ürünlerin iade hakkı ve garanti sürelerini tek yerde takip eden Android uygulaması. Hesap ya da sunucu gerektirmez; tüm veriler cihazda tutulur. 3 ürüne kadar ücretsiz, Premium tek seferlik satın alma.
 
 - Ürün gereksinimleri ve tasarım kuralları: [`SPEC.md`](SPEC.md)
 - Tasarım referansları ve logo: [`design/`](design)
@@ -30,6 +30,8 @@ Yerelde imzalı AAB:
 ```
 UPLOAD_KEYSTORE=/yol/garantiledim-upload.jks UPLOAD_STORE_PASSWORD=... BUILD_NUMBER=<sürüm kodu> ./gradlew bundleRelease
 ```
+
+Play lisans anahtarı (`gradle.properties` > `garantiledim.playLicenseKey`) girilmeden AAB derlenmez; satın alma imzaları bu anahtarla doğrulanır (play/README.md).
 
 Çıktı: `app/build/outputs/bundle/release/app-release.aab`. R8 eşleme dosyası (`app/build/outputs/mapping/release/mapping.txt`) çökme raporlarını okunur kılmak için aynı sürüme Play Console'dan eklenir. Her yeni yüklemede `BUILD_NUMBER` (sürüm kodu) bir öncekinden büyük olmalıdır.
 
@@ -63,6 +65,8 @@ app/src/main/java/com/garantiledim/app/
 - [x] Gizlilik politikası ve kullanım koşulları (uygulamada Profil & Ayarlar > Yasal ve ilk açılış ekranı)
 - [x] Play Store: yükleme anahtarı ve imzalı AAB
 - [ ] Play Console: mağaza kaydı ve kapalı test
-- [ ] Premium (deneme, abonelik, yedekleme) — Google Play Faturalandırma, Play Console kurulumuyla birlikte
+- [x] Türkçe ve İngilizce (Profil & Ayarlar > Dil)
+- [x] Premium: tek seferlik satın alma (Google Play Faturalandırma), 3 ürün ücretsiz sınırı, yedekle / geri yükle
+- [ ] Play Console: `garantiledim_premium` uygulama içi ürününü oluşturma (play/README.md)
 
 Yazı tipi: Poppins, SIL Open Font License 1.1 ([`licenses/Poppins-OFL.txt`](licenses/Poppins-OFL.txt)).

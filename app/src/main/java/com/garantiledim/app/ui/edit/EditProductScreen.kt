@@ -52,7 +52,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.garantiledim.app.R
 import com.garantiledim.app.domain.Category
 import com.garantiledim.app.domain.DurationType
-import com.garantiledim.app.domain.TrDates
+import com.garantiledim.app.i18n.LocalStrings
 import com.garantiledim.app.ui.appViewModelFactory
 import com.garantiledim.app.ui.components.AttachmentRow
 import com.garantiledim.app.ui.components.BackTopBar
@@ -82,6 +82,7 @@ fun EditProductScreen(
     onDeleted: () -> Unit,
     viewModel: EditProductViewModel = viewModel(factory = appViewModelFactory { c, h -> EditProductViewModel(c, h) }),
 ) {
+    val s = LocalStrings.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
     var datePicker by rememberSaveable { mutableStateOf<DateTarget?>(null) }
@@ -128,21 +129,21 @@ fun EditProductScreen(
         try {
             receiptPicker.launch(arrayOf("image/*", "application/pdf"))
         } catch (e: ActivityNotFoundException) {
-            viewModel.showMessage("Dosya seçici bulunamadı")
+            viewModel.showMessage(s.filePickerMissing)
         }
     }
     fun pickPhoto() {
         try {
             photoPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
         } catch (e: ActivityNotFoundException) {
-            viewModel.showMessage("Galeri bulunamadı")
+            viewModel.showMessage(s.galleryMissing)
         }
     }
 
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().imePadding()) {
             BackTopBar(
-                title = if (state.isEdit) "Ürünü Düzenle" else "Yeni Garanti Ekle",
+                title = if (state.isEdit) s.editTitle else s.actionAddTitle,
                 onBack = leave,
             )
             if (!state.loaded) return@Column
@@ -155,23 +156,23 @@ fun EditProductScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 LabeledTextField(
-                    label = "Ürün adı *",
+                    label = s.productName,
                     value = state.name,
                     onValueChange = viewModel::onName,
                     error = state.nameError,
                 )
-                LabeledTextField(label = "Mağaza", value = state.store, onValueChange = viewModel::onStore)
+                LabeledTextField(label = s.store, value = state.store, onValueChange = viewModel::onStore)
 
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         DateField(
-                            label = "Satın alma tarihi",
+                            label = s.purchaseDateField,
                             date = state.purchaseDate,
                             onClick = { datePicker = DateTarget.PURCHASE },
                             modifier = Modifier.weight(1f),
                         )
                         DateField(
-                            label = "Teslim tarihi",
+                            label = s.deliveryDateField,
                             date = state.deliveryDate,
                             onClick = { datePicker = DateTarget.DELIVERY },
                             modifier = Modifier.weight(1f),
@@ -181,14 +182,14 @@ fun EditProductScreen(
                 }
 
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FieldLabel("Kategori")
+                    FieldLabel(s.categoryField)
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         Category.entries.forEach { c ->
                             Pill(
-                                text = c.label,
+                                text = s.category(c),
                                 selected = c == state.category,
                                 onClick = { viewModel.onCategory(c) },
                                 selectedColor = GColors.Lavender,
@@ -198,12 +199,12 @@ fun EditProductScreen(
                 }
 
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FieldLabel("Takip edilecek süreler")
+                    FieldLabel(s.trackedPeriods)
                     DurationType.entries.forEach { type ->
                         PeriodRow(
                             type = type,
                             tracked = state.isTracked(type),
-                            endText = TrDates.numeric(state.endDate(type)),
+                            endText = s.dateNumeric(state.endDate(type)),
                             manual = state.isManual(type),
                             onToggle = { viewModel.onTrack(type, it) },
                             onPickDate = {
@@ -213,26 +214,23 @@ fun EditProductScreen(
                         )
                     }
                     state.periodError?.let { HelpText(it, color = GColors.Danger) }
-                    HelpText(
-                        "Mağazadan aldıysan iade hakkını kapatabilir ya da mağazanın süresini girebilirsin. " +
-                            "Ek garanti varsa garanti tarihini değiştir."
-                    )
+                    HelpText(s.periodsHelp)
                 }
 
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FieldLabel("Fiş / fatura")
+                    FieldLabel(s.receiptField)
                     val receipt = state.receipt
                     if (receipt == null) {
                         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                             DashedActionButton(
-                                text = "Galeriden / dosyadan",
+                                text = s.fromGallery,
                                 icon = R.drawable.ic_image,
                                 enabled = !state.busy,
                                 onClick = ::pickReceipt,
                                 modifier = Modifier.weight(1f),
                             )
                             DashedActionButton(
-                                text = "Kamera ile çek",
+                                text = s.takePhoto,
                                 icon = R.drawable.ic_camera,
                                 enabled = !state.busy,
                                 onClick = { openCamera(PickTarget.RECEIPT) },
@@ -242,7 +240,7 @@ fun EditProductScreen(
                     } else {
                         AttachmentRow(receipt, onRemove = viewModel::removeReceipt)
                     }
-                    HelpText("Fotoğraf veya PDF fatura eklenebilir. Orijinal dosya bozulmadan saklanır.")
+                    HelpText(s.receiptHelp)
                 }
 
                 val photo = state.photo
@@ -257,11 +255,11 @@ fun EditProductScreen(
                             modifier = Modifier.fillMaxWidth().height(52.dp),
                         ) {
                             GIcon(R.drawable.ic_plus, tint = GColors.Lavender, size = 20.dp)
-                            Text("  Ürün fotoğrafı ekle (opsiyonel)", style = GType.BodyMedium)
+                            Text("  " + s.addProductPhoto, style = GType.BodyMedium)
                         }
                         DropdownMenu(expanded = photoMenu, onDismissRequest = { photoMenu = false }) {
                             DropdownMenuItem(
-                                text = { Text("Galeriden seç", style = GType.Body) },
+                                text = { Text(s.chooseFromGallery, style = GType.Body) },
                                 leadingIcon = { GIcon(R.drawable.ic_image, tint = GColors.PastelPink, size = 20.dp) },
                                 onClick = {
                                     photoMenu = false
@@ -269,7 +267,7 @@ fun EditProductScreen(
                                 },
                             )
                             DropdownMenuItem(
-                                text = { Text("Kamera ile çek", style = GType.Body) },
+                                text = { Text(s.takePhoto, style = GType.Body) },
                                 leadingIcon = { GIcon(R.drawable.ic_camera, tint = GColors.PastelPink, size = 20.dp) },
                                 onClick = {
                                     photoMenu = false
@@ -292,9 +290,9 @@ fun EditProductScreen(
                             thumbPath = photo.thumbPath ?: photo.path,
                             modifier = Modifier.size(52.dp),
                         )
-                        Text("Ürün fotoğrafı", style = GType.BodyMedium, color = GColors.Text, modifier = Modifier.weight(1f))
+                        Text(s.productPhoto, style = GType.BodyMedium, color = GColors.Text, modifier = Modifier.weight(1f))
                         IconButton(onClick = viewModel::removePhoto) {
-                            GIcon(R.drawable.ic_trash, tint = GColors.TextSecondary, size = 20.dp, contentDescription = "Fotoğrafı kaldır")
+                            GIcon(R.drawable.ic_trash, tint = GColors.TextSecondary, size = 20.dp, contentDescription = s.removePhotoA11y)
                         }
                     }
                 }
@@ -302,7 +300,7 @@ fun EditProductScreen(
                 if (state.isEdit) {
                     TextButton(onClick = { confirmDelete = true }, modifier = Modifier.align(Alignment.CenterHorizontally)) {
                         GIcon(R.drawable.ic_trash, tint = GColors.Danger, size = 18.dp)
-                        Text("  Ürünü sil", style = GType.Label, color = GColors.Danger)
+                        Text("  " + s.deleteProduct, style = GType.Label, color = GColors.Danger)
                     }
                 }
             }
@@ -323,7 +321,7 @@ fun EditProductScreen(
                     if (state.busy) {
                         CircularProgressIndicator(color = GColors.Pink, strokeWidth = 2.dp, modifier = Modifier.size(22.dp))
                     } else {
-                        Text("Kaydet", style = GType.CardTitle.copy(fontSize = GType.Body.fontSize * 1.14f))
+                        Text(s.save, style = GType.CardTitle.copy(fontSize = GType.Body.fontSize * 1.14f))
                     }
                 }
             }
@@ -362,9 +360,9 @@ fun EditProductScreen(
 
     if (confirmDiscard) {
         ConfirmDialog(
-            title = "Değişiklikler kaydedilmedi",
-            text = "Çıkarsan girdiğin bilgiler ve eklediğin dosyalar kaybolacak.",
-            confirmLabel = "Çık",
+            title = s.unsavedTitle,
+            text = s.unsavedBody,
+            confirmLabel = s.leave,
             onConfirm = {
                 confirmDiscard = false
                 onBack()
@@ -375,9 +373,9 @@ fun EditProductScreen(
 
     if (confirmDelete) {
         ConfirmDialog(
-            title = "Ürün silinsin mi?",
-            text = "\"${state.name}\" ve eklenen fiş/fatura kalıcı olarak silinecek.",
-            confirmLabel = "Sil",
+            title = s.deleteTitle,
+            text = s.deleteBody(state.name),
+            confirmLabel = s.delete,
             onConfirm = viewModel::delete,
             onDismiss = { confirmDelete = false },
         )
@@ -394,6 +392,7 @@ private fun PeriodRow(
     onPickDate: () -> Unit,
     onReset: () -> Unit,
 ) {
+    val s = LocalStrings.current
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -415,12 +414,12 @@ private fun PeriodRow(
             ),
         )
         Column(Modifier.weight(1f)) {
-            Text(type.label, style = GType.BodyMedium.copy(fontWeight = GType.CardTitle.fontWeight), color = GColors.Text)
+            Text(s.duration(type), style = GType.BodyMedium.copy(fontWeight = GType.CardTitle.fontWeight), color = GColors.Text)
             if (manual && tracked) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Elle girildi · ", style = GType.Small, color = GColors.TextMuted)
+                    Text(s.enteredManually, style = GType.Small, color = GColors.TextMuted)
                     Text(
-                        "Sıfırla",
+                        s.reset,
                         style = GType.Badge,
                         color = GColors.Pink,
                         modifier = Modifier
@@ -431,7 +430,7 @@ private fun PeriodRow(
                 }
             } else {
                 Text(
-                    if (type == DurationType.IADE) "Teslimden itibaren 14 gün" else "Teslimden itibaren 2 yıl",
+                    s.periodDefault(type),
                     style = GType.Small,
                     color = GColors.TextMuted,
                 )

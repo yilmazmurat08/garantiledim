@@ -1,5 +1,7 @@
 package com.garantiledim.app.domain
 
+import com.garantiledim.app.i18n.EnStrings
+import com.garantiledim.app.i18n.TrStrings
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -43,27 +45,27 @@ class ProductListsTest {
 
     @Test
     fun `liste sıralaması`() {
-        val sorted = sortProducts(all, today)
+        val sorted = sortProducts(all, today, TrStrings)
         assertEquals(listOf("Kablosuz Kulaklık", "Kışlık Mont", "Akıllı Saat"), sorted.active.map { it.product.name })
         assertEquals(listOf("Kahve Makinesi", "Eski Ütü"), sorted.expired.map { it.product.name })
     }
 
     @Test
     fun `özet öne çıkan süreyi kullanır`() {
-        val s = summarize(kulaklik, today)
+        val s = summarize(kulaklik, today, TrStrings)
         assertEquals(DurationType.IADE, s.primary!!.type)
         assertEquals(Urgency.DANGER, s.urgency)
         assertEquals("2 gün kaldı", s.label)
         assertEquals("2 gün", s.shortLabel)
         assertFalse(s.expired)
-        assertTrue(summarize(kahve, today).expired)
+        assertTrue(summarize(kahve, today, TrStrings).expired)
     }
 
     @Test
     fun `filtreler ve arama`() {
-        val sorted = sortProducts(all, today)
+        val sorted = sortProducts(all, today, TrStrings)
         fun names(f: ProductFilter, q: String = "") =
-            filterProducts(sorted, f, q, today).let { it.active + it.expired }.map { it.product.name }
+            filterProducts(sorted, f, q, today, TrStrings.locale).let { it.active + it.expired }.map { it.product.name }
 
         assertEquals(5, names(ProductFilter.ALL).size)
         assertEquals(listOf("Kablosuz Kulaklık", "Kışlık Mont"), names(ProductFilter.UPCOMING))
@@ -76,14 +78,14 @@ class ProductListsTest {
 
     @Test
     fun `günün garantileri yeni dolanları sona ekler, eskileri almaz`() {
-        val names = homeHighlights(all, today).map { it.product.name }
+        val names = homeHighlights(all, today, TrStrings).map { it.product.name }
         assertEquals(listOf("Kablosuz Kulaklık", "Kışlık Mont", "Akıllı Saat", "Kahve Makinesi"), names)
-        assertEquals(2, homeHighlights(all, today, limit = 2).size)
+        assertEquals(2, homeHighlights(all, today, TrStrings, limit = 2).size)
     }
 
     @Test
     fun `ajanda iki süreli ürünü iki kez gösterir`() {
-        val groups = agendaGroups(all, today)
+        val groups = agendaGroups(all, today, TrStrings)
         assertEquals(listOf("Bu hafta", "Önümüzdeki 30 gün", "Daha sonra"), groups.map { it.title })
         val week = groups[0].entries
         assertEquals(listOf("Kablosuz Kulaklık"), week.map { it.productName })
@@ -93,6 +95,14 @@ class ProductListsTest {
         assertEquals(listOf("Akıllı Saat", "Kablosuz Kulaklık"), later.map { it.productName })
         assertEquals(DurationType.GARANTI, later[1].deadline.type)
         assertEquals("Garanti bitişi · 2028", later[1].subtitle)
+    }
+
+    @Test
+    fun `ajanda ingilizce`() {
+        val groups = agendaGroups(all, today, EnStrings)
+        assertEquals(listOf("This week", "Next 30 days", "Later"), groups.map { it.title })
+        assertEquals("Last day to return · Monday", groups[0].entries[0].subtitle)
+        assertEquals("Warranty ends · 2028", groups[2].entries[1].subtitle)
     }
 
     @Test
