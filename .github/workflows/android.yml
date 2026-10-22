@@ -39,6 +39,18 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
+      # Google'ın sunucusundan emülatör indirmesi zaman zaman bozuk arşivle kesiliyor;
+      # paketler testten önce yeniden denemeyle kurulur, sonraki adım kurulu olanı kullanır.
+      - name: Emülatör paketlerini kur (yeniden denemeli)
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          for i in 1 2 3; do
+            yes | "$SDKMANAGER" --install emulator "system-images;android-34;google_apis;x86_64" > /dev/null && exit 0
+            echo "Kurulum denemesi $i başarısız, tekrar deneniyor"
+            sleep 20
+          done
+          exit 1
+
       - name: Emülatörde ekran turu ve release açılış testi
         uses: reactivecircus/android-emulator-runner@v2
         with:
