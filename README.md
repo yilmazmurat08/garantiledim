@@ -65,6 +65,7 @@ app/src/main/java/com/garantiledim/app/
 - [x] Gizlilik politikası ve kullanım koşulları (uygulamada Profil & Ayarlar > Yasal ve ilk açılış ekranı)
 - [x] Play Store: yükleme anahtarı ve imzalı AAB
 - [ ] Play Console: mağaza kaydı ve kapalı test
+- [x] Türkçe ve İngilizce (Profil & Ayarlar > Dil)
 - [x] Premium: tek seferlik satın alma (Google Play Faturalandırma), 3 ürün ücretsiz sınırı, yedekle / geri yükle
 - [ ] Play Console: `garantiledim_premium` uygulama içi ürününü oluşturma (play/README.md)
 

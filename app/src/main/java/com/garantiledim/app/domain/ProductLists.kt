@@ -1,6 +1,8 @@
 package com.garantiledim.app.domain
 
+import com.garantiledim.app.i18n.Strings
 import java.time.LocalDate
+import java.util.Locale
 
 /** Bir ürünün kartta gösterilecek hali: öne çıkan süre ve rozet bilgileri. */
 data class ProductSummary(
@@ -12,15 +14,15 @@ data class ProductSummary(
     val expired: Boolean,
 )
 
-fun summarize(product: Product, today: LocalDate): ProductSummary {
+fun summarize(product: Product, today: LocalDate, s: Strings): ProductSummary {
     val primary = product.primaryDeadline(today)
     val days = primary?.let { daysRemaining(it.endDate, today) }
     return ProductSummary(
         product = product,
         primary = primary,
         urgency = days?.let(::urgencyOf) ?: Urgency.SUCCESS,
-        label = primary?.let { remainingLabel(it.endDate, today) } ?: "",
-        shortLabel = primary?.let { shortRemainingLabel(it.endDate, today) } ?: "",
+        label = primary?.let { remainingLabel(it.endDate, today, s) } ?: "",
+        shortLabel = primary?.let { shortRemainingLabel(it.endDate, today, s) } ?: "",
         expired = product.isExpired(today),
     )
 }
@@ -31,8 +33,8 @@ data class SortedProducts(
 )
 
 /** Devam edenler bitişi en yakından uzağa, süresi dolanlar en yeni dolandan eskiye. */
-fun sortProducts(products: List<Product>, today: LocalDate): SortedProducts {
-    val (expired, active) = products.map { summarize(it, today) }.partition { it.expired }
+fun sortProducts(products: List<Product>, today: LocalDate, s: Strings): SortedProducts {
+    val (expired, active) = products.map { summarize(it, today, s) }.partition { it.expired }
     return SortedProducts(
         active = active.sortedWith(compareBy({ it.primary?.endDate }, { it.product.name })),
         expired = expired.sortedWith(
@@ -41,12 +43,7 @@ fun sortProducts(products: List<Product>, today: LocalDate): SortedProducts {
     )
 }
 
-enum class ProductFilter(val label: String) {
-    ALL("Tümü"),
-    UPCOMING("Yaklaşan"),
-    ACTIVE("Aktif"),
-    EXPIRED("Süresi dolan"),
-}
+enum class ProductFilter { ALL, UPCOMING, ACTIVE, EXPIRED }
 
 fun ProductSummary.matches(filter: ProductFilter, today: LocalDate): Boolean = when (filter) {
     ProductFilter.ALL -> true
@@ -56,11 +53,12 @@ fun ProductSummary.matches(filter: ProductFilter, today: LocalDate): Boolean = w
         daysRemaining(primary.endDate, today) in 0..13
 }
 
-fun ProductSummary.matches(query: String): Boolean {
-    val q = query.trim().lowercase(TURKISH)
+/** Ad ya da mağazada arar; büyük/küçük harf uygulama diline göre (Türkçede I/ı, İ/i). */
+fun ProductSummary.matches(query: String, locale: Locale): Boolean {
+    val q = query.trim().lowercase(locale)
     if (q.isEmpty()) return true
-    return product.name.lowercase(TURKISH).contains(q) ||
-        product.store.lowercase(TURKISH).contains(q)
+    return product.name.lowercase(locale).contains(q) ||
+        product.store.lowercase(locale).contains(q)
 }
 
 fun filterProducts(
@@ -68,9 +66,10 @@ fun filterProducts(
     filter: ProductFilter,
     query: String,
     today: LocalDate,
+    locale: Locale,
 ): SortedProducts = SortedProducts(
-    active = sorted.active.filter { it.matches(filter, today) && it.matches(query) },
-    expired = sorted.expired.filter { it.matches(filter, today) && it.matches(query) },
+    active = sorted.active.filter { it.matches(filter, today) && it.matches(query, locale) },
+    expired = sorted.expired.filter { it.matches(filter, today) && it.matches(query, locale) },
 )
 
 /**
@@ -80,10 +79,11 @@ fun filterProducts(
 fun homeHighlights(
     products: List<Product>,
     today: LocalDate,
+    s: Strings,
     limit: Int = 6,
     expiredWindowDays: Long = 30,
 ): List<ProductSummary> {
-    val sorted = sortProducts(products, today)
+    val sorted = sortProducts(products, today, s)
     val recentlyExpired = sorted.expired.filter { s ->
         val end = s.primary?.endDate ?: return@filter false
         daysRemaining(end, today) >= -expiredWindowDays
@@ -111,7 +111,7 @@ data class AgendaEntry(
 data class AgendaGroup(val title: String, val entries: List<AgendaEntry>)
 
 /** Süresi devam eden tüm süreler; iki süresi olan ürün iki kez yer alır. */
-fun agendaGroups(products: List<Product>, today: LocalDate): List<AgendaGroup> {
+fun agendaGroups(products: List<Product>, today: LocalDate, s: Strings): List<AgendaGroup> {
     val entries = products.flatMap { product ->
         product.deadlines()
             .filter { !it.endDate.isBefore(today) }
@@ -122,11 +122,11 @@ fun agendaGroups(products: List<Product>, today: LocalDate): List<AgendaGroup> {
                     productName = product.name,
                     deadline = d,
                     urgency = urgencyOf(days),
-                    shortLabel = shortRemainingLabel(d.endDate, today),
+                    shortLabel = shortRemainingLabel(d.endDate, today, s),
                     subtitle = if (days <= 30) {
-                        "${d.type.endLabel} · ${TrDates.weekday(d.endDate)}"
+                        "${s.durationEnd(d.type)} · ${s.weekday(d.endDate)}"
                     } else {
-                        "${d.type.endLabel} · ${d.endDate.year}"
+                        "${s.durationEnd(d.type)} · ${d.endDate.year}"
                     },
                 )
             }
@@ -138,8 +138,8 @@ fun agendaGroups(products: List<Product>, today: LocalDate): List<AgendaGroup> {
     )
 
     return listOf(
-        group("Bu hafta", 0L..6L),
-        group("Önümüzdeki 30 gün", 7L..30L),
-        group("Daha sonra", 31L..Long.MAX_VALUE),
+        group(s.agendaThisWeek, 0L..6L),
+        group(s.agendaNext30, 7L..30L),
+        group(s.agendaLater, 31L..Long.MAX_VALUE),
     ).filter { it.entries.isNotEmpty() }
 }

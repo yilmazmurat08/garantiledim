@@ -20,7 +20,7 @@ Uygulamayı kullanırken aşağıdaki bilgileri sen girersin:
 - Fiş ve faturalar: eklediğin fotoğraf ya da PDF dosyaları ve bunlardan üretilen küçük önizlemeler.
 - Ürün fotoğrafları.
 - Profil bilgileri: karşılama ekranında görünen adın ve isteğe bağlı profil fotoğrafın.
-- Ayarlar: hatırlatma başlangıcı ve bildirim saati.
+- Ayarlar: hatırlatma başlangıcı, bildirim saati ve uygulama dili.
 
 Bu bilgiler yalnızca uygulamanın telefonundaki özel depolama alanına kaydedilir. Diğer uygulamalar bu alana erişemez, biz de erişemeyiz.
 

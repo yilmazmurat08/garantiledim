@@ -44,6 +44,7 @@ import coil3.compose.AsyncImage
 import com.garantiledim.app.R
 import com.garantiledim.app.domain.Category
 import com.garantiledim.app.domain.Urgency
+import com.garantiledim.app.i18n.LocalStrings
 import com.garantiledim.app.ui.theme.GColors
 import com.garantiledim.app.ui.theme.GShapes
 import com.garantiledim.app.ui.theme.GType
@@ -211,6 +212,7 @@ fun BackTopBar(
     centered: Boolean = false,
     actions: @Composable RowScope.() -> Unit = {},
 ) {
+    val s = LocalStrings.current
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -219,7 +221,7 @@ fun BackTopBar(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(onClick = onBack) {
-            GIcon(R.drawable.ic_chevron_left, contentDescription = "Geri")
+            GIcon(R.drawable.ic_chevron_left, contentDescription = s.back)
         }
         Text(
             text = title,

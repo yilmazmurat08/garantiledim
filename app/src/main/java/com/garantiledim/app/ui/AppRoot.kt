@@ -57,6 +57,8 @@ import com.garantiledim.app.AppContainer
 import com.garantiledim.app.GarantiledimApp
 import com.garantiledim.app.R
 import com.garantiledim.app.domain.canAddProduct
+import com.garantiledim.app.i18n.LocalStrings
+import com.garantiledim.app.i18n.Strings
 import com.garantiledim.app.ui.agenda.AgendaScreen
 import com.garantiledim.app.ui.components.GIcon
 import com.garantiledim.app.ui.detail.ProductDetailScreen
@@ -74,11 +76,18 @@ import com.garantiledim.app.ui.theme.GType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 
-enum class Tab(val route: String, val label: String, @DrawableRes val icon: Int) {
-    HOME("home", "Ana Sayfa", R.drawable.ic_home),
-    LIST("list", "Garanti Belgelerim", R.drawable.ic_document),
-    AGENDA("agenda", "Ajanda ve Hatırlatıcılar", R.drawable.ic_calendar_check),
-    PROFILE("profile", "Profil & Ayarlar", R.drawable.ic_settings),
+enum class Tab(val route: String, @DrawableRes val icon: Int) {
+    HOME("home", R.drawable.ic_home),
+    LIST("list", R.drawable.ic_document),
+    AGENDA("agenda", R.drawable.ic_calendar_check),
+    PROFILE("profile", R.drawable.ic_settings);
+
+    fun label(s: Strings): String = when (this) {
+        HOME -> s.tabHome
+        LIST -> s.tabList
+        AGENDA -> s.tabAgenda
+        PROFILE -> s.tabProfile
+    }
 }
 
 private object Routes {
@@ -263,6 +272,7 @@ private fun NavHostController.openTab(tab: Tab) {
 /** Yüzen alt menü (SPEC.md madde 4.0). */
 @Composable
 private fun BottomBar(current: Tab, onSelect: (Tab) -> Unit) {
+    val s = LocalStrings.current
     Row(
         modifier = Modifier
             .navigationBarsPadding()
@@ -294,7 +304,7 @@ private fun BottomBar(current: Tab, onSelect: (Tab) -> Unit) {
                 )
                 Box(Modifier.padding(top = 2.dp)) { GIcon(tab.icon, tint = color) }
                 Text(
-                    text = tab.label,
+                    text = tab.label(s),
                     style = GType.NavLabel,
                     color = color,
                     textAlign = TextAlign.Center,

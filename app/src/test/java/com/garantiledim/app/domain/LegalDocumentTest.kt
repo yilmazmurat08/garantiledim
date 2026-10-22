@@ -65,4 +65,29 @@ class LegalDocumentTest {
         assertTrue("Ücretsiz sınır metinde kodla aynı olmalı", text.contains("en fazla $FREE_PRODUCT_LIMIT ürün"))
         assertTrue(text.contains("abonelik değildir"))
     }
+
+    @Test
+    fun `ingilizce metinler eksiksiz`() {
+        val privacy = asset("en/privacy-policy.md")
+        assertEquals(LegalBlock.Title("Privacy Policy"), parseLegal(privacy).first())
+        val privacyHeadings = parseLegal(privacy).filterIsInstance<LegalBlock.Heading>().map { it.text }
+        listOf("Summary", "Permissions and why they are used", "Premium purchase", "Backup file (Premium)", "Data retention and deletion", "Contact")
+            .forEach { assertTrue("Missing section: $it", it in privacyHeadings) }
+        assertTrue(privacy.contains(CONTACT_EMAIL))
+        assertTrue(privacy.contains("developed by $DEVELOPER_NAME"))
+
+        val terms = asset("en/terms-of-use.md")
+        assertEquals(LegalBlock.Title("Terms of Use"), parseLegal(terms).first())
+        val termsHeadings = parseLegal(terms).filterIsInstance<LegalBlock.Heading>().map { it.text }
+        listOf("Not legal advice", "Paid features", "Limitation of liability", "Governing law", "Contact")
+            .forEach { assertTrue("Missing section: $it", it in termsHeadings) }
+        assertTrue(terms.contains("up to $FREE_PRODUCT_LIMIT products"))
+        assertTrue(terms.contains("not a subscription"))
+
+        // İki dilde aynı sayıda bölüm olmalı (bir dilde bölüm unutulmasın).
+        val trPrivacy = parseLegal(asset("gizlilik-politikasi.md")).count { it is LegalBlock.Heading }
+        val trTerms = parseLegal(asset("kullanim-kosullari.md")).count { it is LegalBlock.Heading }
+        assertEquals(trPrivacy, privacyHeadings.size)
+        assertEquals(trTerms, termsHeadings.size)
+    }
 }

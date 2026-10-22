@@ -21,7 +21,9 @@ import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 
 /** Yedek dosyası okunamadı ya da Garantiledim yedeği değil. */
-class InvalidBackupException(message: String) : IOException(message)
+class InvalidBackupException(val reason: Reason) : IOException(reason.name) {
+    enum class Reason { CORRUPT, NOT_A_BACKUP, TOO_NEW }
+}
 
 /**
  * Premium yedekleme: tüm ürünler, fiş/faturalar, ürün fotoğrafları ve hatırlatma ayarları tek bir
@@ -97,7 +99,7 @@ class BackupManager(
                     when {
                         entry.isDirectory -> Unit
                         entry.name == JSON_ENTRY -> json = runCatching { JSONObject(zip.readBytes().decodeToString()) }
-                            .getOrElse { throw InvalidBackupException("Yedek dosyası bozuk") }
+                            .getOrElse { throw InvalidBackupException(InvalidBackupException.Reason.CORRUPT) }
                         // Yalnızca beklenen klasörlerdeki düz dosya adları kabul edilir (../ gibi yollar atlanır).
                         FILE_ENTRY.matches(entry.name) -> {
                             val rel = entry.name.removePrefix("files/")
@@ -107,10 +109,10 @@ class BackupManager(
                     }
                 }
             }
-            val data = json ?: throw InvalidBackupException("Bu dosya bir Garantiledim yedeği değil")
-            if (data.optString("format") != FORMAT) throw InvalidBackupException("Bu dosya bir Garantiledim yedeği değil")
+            val data = json ?: throw InvalidBackupException(InvalidBackupException.Reason.NOT_A_BACKUP)
+            if (data.optString("format") != FORMAT) throw InvalidBackupException(InvalidBackupException.Reason.NOT_A_BACKUP)
             if (data.optInt("version") > VERSION) {
-                throw InvalidBackupException("Bu yedek daha yeni bir sürümle alınmış; önce uygulamayı güncelle")
+                throw InvalidBackupException(InvalidBackupException.Reason.TOO_NEW)
             }
 
             // Yedekteki dosyalar yeni adlarla uygulamanın klasörlerine taşınır.
@@ -129,7 +131,7 @@ class BackupManager(
             val array = data.optJSONArray("products") ?: JSONArray()
             val restored = (0 until array.length()).map { i ->
                 runCatching { array.getJSONObject(i).toEntity(::place) }
-                    .getOrElse { throw InvalidBackupException("Yedek dosyası bozuk") }
+                    .getOrElse { throw InvalidBackupException(InvalidBackupException.Reason.CORRUPT) }
             }
 
             val old = dao.getAll()

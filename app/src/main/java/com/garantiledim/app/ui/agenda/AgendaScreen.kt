@@ -36,8 +36,9 @@ import com.garantiledim.app.R
 import com.garantiledim.app.data.UserSettings
 import com.garantiledim.app.domain.AgendaEntry
 import com.garantiledim.app.domain.AgendaGroup
-import com.garantiledim.app.domain.TrDates
 import com.garantiledim.app.domain.agendaGroups
+import com.garantiledim.app.i18n.LocalStrings
+import com.garantiledim.app.i18n.Strings
 import com.garantiledim.app.ui.appViewModelFactory
 import com.garantiledim.app.ui.components.EmptyMessage
 import com.garantiledim.app.ui.components.GIcon
@@ -54,7 +55,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import java.util.Locale
 
 data class AgendaUiState(
     val loaded: Boolean = false,
@@ -62,20 +62,20 @@ data class AgendaUiState(
     val reminderText: String = "",
 )
 
-fun UserSettings.reminderSummary(): String =
-    "Bitişten $reminderLeadDays gün önce başlar, her gün " +
-        String.format(Locale.ROOT, "%02d:%02d", notifyHour, notifyMinute) + "'da"
+fun UserSettings.reminderSummary(s: Strings): String =
+    s.reminderSummary(reminderLeadDays, s.time(notifyHour, notifyMinute))
 
 class AgendaViewModel(container: AppContainer) : ViewModel() {
     val state: StateFlow<AgendaUiState> = combine(
         container.products.products,
         container.settings.settings,
         container.today.today,
-    ) { products, settings, today ->
+        container.language.strings,
+    ) { products, settings, today, s ->
         AgendaUiState(
             loaded = true,
-            groups = agendaGroups(products, today),
-            reminderText = settings.reminderSummary(),
+            groups = agendaGroups(products, today, s),
+            reminderText = settings.reminderSummary(s),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AgendaUiState())
 }
@@ -86,6 +86,7 @@ fun AgendaScreen(
     onOpenSettings: () -> Unit,
     viewModel: AgendaViewModel = viewModel(factory = appViewModelFactory { c, _ -> AgendaViewModel(c) }),
 ) {
+    val s = LocalStrings.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val notificationsEnabled = rememberNotificationsEnabled()
     val context = LocalContext.current
@@ -96,7 +97,7 @@ fun AgendaScreen(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         item(key = "title") {
-            Text("Ajanda ve Hatırlatıcılar", style = GType.ScreenTitle, color = GColors.Text)
+            Text(s.tabAgenda, style = GType.ScreenTitle, color = GColors.Text)
         }
         if (!notificationsEnabled) {
             item(key = "notifications-off") {
@@ -109,8 +110,8 @@ fun AgendaScreen(
         if (state.loaded && state.groups.isEmpty()) {
             item(key = "empty") {
                 EmptyMessage(
-                    title = "Yaklaşan bir bitiş tarihi yok",
-                    body = "Süresi devam eden ürünlerin bitiş tarihleri burada sıralanır.",
+                    title = s.agendaEmptyTitle,
+                    body = s.agendaEmptyBody,
                 )
             }
         }
@@ -127,6 +128,7 @@ fun AgendaScreen(
 
 @Composable
 private fun NotificationsOffCard(onOpen: () -> Unit, modifier: Modifier = Modifier) {
+    val s = LocalStrings.current
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -138,19 +140,20 @@ private fun NotificationsOffCard(onOpen: () -> Unit, modifier: Modifier = Modifi
     ) {
         GIcon(R.drawable.ic_bell, tint = GColors.Danger, size = 22.dp)
         Text(
-            "Bildirimler kapalı, hatırlatma alamazsın",
+            s.notificationsOff,
             style = GType.Label,
             color = GColors.Text,
             modifier = Modifier.weight(1f),
         )
         TextButton(onClick = onOpen) {
-            Text("Ayarlara git", style = GType.Label.copy(fontWeight = GType.Badge.fontWeight), color = GColors.Pink)
+            Text(s.openSettings, style = GType.Label.copy(fontWeight = GType.Badge.fontWeight), color = GColors.Pink)
         }
     }
 }
 
 @Composable
 private fun ReminderCard(text: String, onOpenSettings: () -> Unit, modifier: Modifier = Modifier) {
+    val s = LocalStrings.current
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -170,7 +173,7 @@ private fun ReminderCard(text: String, onOpenSettings: () -> Unit, modifier: Mod
                 GIcon(R.drawable.ic_bell, tint = GColors.PastelLavenderIcon, size = 22.dp)
             }
             Column(Modifier.weight(1f)) {
-                Text("Hatırlatma ayarı", style = GType.ActionTitle, color = GColors.OnPastel)
+                Text(s.reminderSetting, style = GType.ActionTitle, color = GColors.OnPastel)
                 Text(text, style = GType.Caption.copy(lineHeight = GType.Caption.fontSize * 1.4f), color = GColors.PastelLavenderText)
             }
         }
@@ -180,13 +183,14 @@ private fun ReminderCard(text: String, onOpenSettings: () -> Unit, modifier: Mod
             colors = ButtonDefaults.buttonColors(containerColor = GColors.OnPastel, contentColor = GColors.Text),
             modifier = Modifier.height(44.dp),
         ) {
-            Text("Ayarla", style = GType.Label.copy(fontWeight = GType.Badge.fontWeight))
+            Text(s.adjust, style = GType.Label.copy(fontWeight = GType.Badge.fontWeight))
         }
     }
 }
 
 @Composable
 private fun AgendaRow(entry: AgendaEntry, onClick: () -> Unit) {
+    val s = LocalStrings.current
     val color = entry.urgency.color()
     Row(
         modifier = Modifier
@@ -206,7 +210,7 @@ private fun AgendaRow(entry: AgendaEntry, onClick: () -> Unit) {
             verticalArrangement = Arrangement.Center,
         ) {
             Text("${entry.deadline.endDate.dayOfMonth}", style = GType.SectionTitle.copy(fontWeight = GType.ActionTitle.fontWeight), color = color)
-            Text(TrDates.monthShortUpper(entry.deadline.endDate), style = GType.Badge.copy(fontSize = GType.Badge.fontSize * 0.9f, lineHeight = GType.Badge.fontSize), color = color)
+            Text(s.monthShortUpper(entry.deadline.endDate), style = GType.Badge.copy(fontSize = GType.Badge.fontSize * 0.9f, lineHeight = GType.Badge.fontSize), color = color)
         }
         Column(Modifier.weight(1f)) {
             Text(entry.productName, style = GType.BodyMedium.copy(fontWeight = GType.CardTitle.fontWeight), color = GColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis)

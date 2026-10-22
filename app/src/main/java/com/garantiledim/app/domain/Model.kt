@@ -2,21 +2,9 @@ package com.garantiledim.app.domain
 
 import java.time.LocalDate
 
-enum class Category(val label: String) {
-    ELEKTRONIK("Elektronik"),
-    BEYAZ_ESYA("Beyaz eşya"),
-    GIYIM("Giyim"),
-    DIGER("Diğer"),
-}
+enum class Category { ELEKTRONIK, BEYAZ_ESYA, GIYIM, DIGER }
 
-enum class DurationType(
-    val label: String,
-    val shortLabel: String,
-    val endLabel: String,
-) {
-    IADE("İade hakkı", "İade", "İade son günü"),
-    GARANTI("Garanti", "Garanti", "Garanti bitişi"),
-}
+enum class DurationType { IADE, GARANTI }
 
 enum class Urgency { SUCCESS, WARNING, DANGER, EXPIRED }
 

@@ -13,6 +13,7 @@ import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import com.garantiledim.app.i18n.LocalStrings
 import com.garantiledim.app.ui.theme.GColors
 import com.garantiledim.app.ui.theme.GType
 import java.time.Instant
@@ -32,6 +33,7 @@ fun DatePickerSheet(
     onPick: (LocalDate) -> Unit,
     minDate: LocalDate? = null,
 ) {
+    val s = LocalStrings.current
     val state = rememberDatePickerState(
         initialSelectedDateMillis = initial.toUtcMillis(),
         selectableDates = object : SelectableDates {
@@ -45,10 +47,10 @@ fun DatePickerSheet(
             TextButton(onClick = {
                 state.selectedDateMillis?.let { onPick(it.toUtcDate()) }
                 onDismiss()
-            }) { Text("Tamam", style = GType.Label, color = GColors.Pink) }
+            }) { Text(s.ok, style = GType.Label, color = GColors.Pink) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Vazgeç", style = GType.Label, color = GColors.TextSecondary) }
+            TextButton(onClick = onDismiss) { Text(s.cancel, style = GType.Label, color = GColors.TextSecondary) }
         },
         colors = DatePickerDefaults.colors(containerColor = GColors.Surface),
     ) {
@@ -65,11 +67,12 @@ fun TimePickerSheet(
     onDismiss: () -> Unit,
     onPick: (hour: Int, minute: Int) -> Unit,
 ) {
+    val s = LocalStrings.current
     val state = rememberTimePickerState(initialHour = hour, initialMinute = minute, is24Hour = true)
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = GColors.Surface,
-        title = { Text("Bildirim saati", style = GType.SectionTitle, color = GColors.Text) },
+        title = { Text(s.notificationTime, style = GType.SectionTitle, color = GColors.Text) },
         text = {
             TimePicker(
                 state = state,
@@ -86,10 +89,10 @@ fun TimePickerSheet(
             TextButton(onClick = {
                 onPick(state.hour, state.minute)
                 onDismiss()
-            }) { Text("Tamam", style = GType.Label, color = GColors.Pink) }
+            }) { Text(s.ok, style = GType.Label, color = GColors.Pink) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Vazgeç", style = GType.Label, color = GColors.TextSecondary) }
+            TextButton(onClick = onDismiss) { Text(s.cancel, style = GType.Label, color = GColors.TextSecondary) }
         },
     )
 }
@@ -103,6 +106,7 @@ fun ConfirmDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val s = LocalStrings.current
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = GColors.Surface,
@@ -115,7 +119,7 @@ fun ConfirmDialog(
             }) { Text(confirmLabel, style = GType.Label, color = GColors.Danger) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Vazgeç", style = GType.Label, color = GColors.TextSecondary) }
+            TextButton(onClick = onDismiss) { Text(s.cancel, style = GType.Label, color = GColors.TextSecondary) }
         },
     )
 }

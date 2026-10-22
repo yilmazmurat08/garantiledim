@@ -1,5 +1,6 @@
 package com.garantiledim.app.ui.premium
 
+import com.garantiledim.app.i18n.LocalStrings
 import androidx.activity.compose.LocalActivity
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
@@ -43,6 +44,7 @@ import com.garantiledim.app.AppContainer
 import com.garantiledim.app.R
 import com.garantiledim.app.billing.PremiumOffer
 import com.garantiledim.app.domain.FREE_PRODUCT_LIMIT
+import com.garantiledim.app.i18n.Strings
 import com.garantiledim.app.ui.appViewModelFactory
 import com.garantiledim.app.ui.components.BackTopBar
 import com.garantiledim.app.ui.components.GIcon
@@ -100,6 +102,7 @@ fun PaywallScreen(
     onOpenLegal: (LegalDoc) -> Unit,
     viewModel: PaywallViewModel = viewModel(factory = appViewModelFactory { c, _ -> PaywallViewModel(c) }),
 ) {
+    val s = LocalStrings.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val activity = LocalActivity.current
     val snackbar = remember { SnackbarHostState() }
@@ -124,9 +127,9 @@ fun PaywallScreen(
                     modifier = Modifier.size(112.dp),
                 )
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("Garantiledim Premium", style = GType.ScreenTitle.copy(fontSize = GType.ScreenTitle.fontSize * 1.1f), color = GColors.Text)
+                    Text(s.premiumTitle, style = GType.ScreenTitle.copy(fontSize = GType.ScreenTitle.fontSize * 1.1f), color = GColors.Text)
                     Text(
-                        if (state.owned) "Premium aktif. Desteğin için teşekkürler!" else reason.subtitle(),
+                        if (state.owned) s.premiumThanks else reason.subtitle(s),
                         style = GType.Body,
                         color = GColors.TextSecondary,
                         textAlign = TextAlign.Center,
@@ -134,17 +137,17 @@ fun PaywallScreen(
                 }
 
                 Column(Modifier.fillMaxWidth().surfaceCard().padding(vertical = 6.dp)) {
-                    Benefit(R.drawable.ic_infinity, GColors.PastelPink, GColors.PastelPinkIcon, "Sınırsız ürün", "İstediğin kadar ürün, fiş ve fatura ekle")
+                    Benefit(R.drawable.ic_infinity, GColors.PastelPink, GColors.PastelPinkIcon, s.benefitUnlimited, s.benefitUnlimitedBody)
                     HorizontalDivider(color = GColors.SurfaceHigh, modifier = Modifier.padding(horizontal = 14.dp))
-                    Benefit(R.drawable.ic_bell, GColors.PastelLavender, GColors.PastelLavenderIcon, "Her ürüne hatırlatma", "Tüm iade ve garanti süreleri için bildirim")
+                    Benefit(R.drawable.ic_bell, GColors.PastelLavender, GColors.PastelLavenderIcon, s.benefitReminders, s.benefitRemindersBody)
                     HorizontalDivider(color = GColors.SurfaceHigh, modifier = Modifier.padding(horizontal = 14.dp))
-                    Benefit(R.drawable.ic_upload, GColors.PastelPeach, GColors.PastelPeachIcon, "Yedekle ve taşı", "Ürünlerin, faturaların ve fotoğrafların tek dosyada; yeni telefona geri yükle")
+                    Benefit(R.drawable.ic_upload, GColors.PastelPeach, GColors.PastelPeachIcon, s.benefitBackup, s.benefitBackupBody)
                     HorizontalDivider(color = GColors.SurfaceHigh, modifier = Modifier.padding(horizontal = 14.dp))
-                    Benefit(R.drawable.ic_star, GColors.PastelPink, GColors.PastelPinkIcon, "Tek seferlik ödeme", "Abonelik yok. Bir kez öde, hep senin")
+                    Benefit(R.drawable.ic_star, GColors.PastelPink, GColors.PastelPinkIcon, s.benefitOneTime, s.benefitOneTimeBody)
                 }
 
                 Text(
-                    "Ücretsiz sürümde $FREE_PRODUCT_LIMIT ürüne kadar tüm özellikler (yedekleme hariç) kullanılabilir.",
+                    s.freeTierNote(FREE_PRODUCT_LIMIT),
                     style = GType.Caption,
                     color = GColors.TextMuted,
                     textAlign = TextAlign.Center,
@@ -159,17 +162,17 @@ fun PaywallScreen(
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 when {
-                    state.owned -> PrimaryButton(text = "Devam et", onClick = onClose)
+                    state.owned -> PrimaryButton(text = s.continueLabel, onClick = onClose)
                     else -> when (val offer = state.offer) {
                         PremiumOffer.Loading -> PrimaryButton(text = null, onClick = {}, enabled = false)
                         is PremiumOffer.Available -> PrimaryButton(
-                            text = "Premium'u al · ${offer.price}",
+                            text = s.buyPremium(offer.price),
                             onClick = { activity?.let(viewModel::purchase) },
                         )
                         PremiumOffer.Unavailable -> {
-                            PrimaryButton(text = "Tekrar dene", onClick = viewModel::retry)
+                            PrimaryButton(text = s.retry, onClick = viewModel::retry)
                             Text(
-                                "Google Play'e bağlanılamadı. İnternet bağlantını ve Play Store hesabını kontrol et.",
+                                s.playUnavailable,
                                 style = GType.Small,
                                 color = GColors.Warning,
                                 textAlign = TextAlign.Center,
@@ -179,22 +182,22 @@ fun PaywallScreen(
                 }
                 if (!state.owned) {
                     Text(
-                        "Tek seferlik ödeme · Abonelik değildir, otomatik yenilenmez. Ödeme Google Play hesabından alınır.",
+                        s.oneTimeDisclosure,
                         style = GType.Small,
                         color = GColors.TextMuted,
                         textAlign = TextAlign.Center,
                     )
                     TextButton(onClick = viewModel::restore) {
-                        Text("Satın alımı geri yükle", style = GType.Label, color = GColors.Pink)
+                        Text(s.restorePurchase, style = GType.Label, color = GColors.Pink)
                     }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     TextButton(onClick = { onOpenLegal(LegalDoc.TERMS) }) {
-                        Text(LegalDoc.TERMS.title, style = GType.Small, color = GColors.TextSecondary)
+                        Text(LegalDoc.TERMS.title(s), style = GType.Small, color = GColors.TextSecondary)
                     }
                     Text("·", style = GType.Small, color = GColors.TextMuted)
                     TextButton(onClick = { onOpenLegal(LegalDoc.PRIVACY) }) {
-                        Text(LegalDoc.PRIVACY.title, style = GType.Small, color = GColors.TextSecondary)
+                        Text(LegalDoc.PRIVACY.title(s), style = GType.Small, color = GColors.TextSecondary)
                     }
                 }
             }
@@ -210,13 +213,10 @@ fun PaywallScreen(
     }
 }
 
-private fun PaywallReason.subtitle(): String = when (this) {
-    PaywallReason.LIMIT ->
-        "Ücretsiz sürümde en fazla $FREE_PRODUCT_LIMIT ürün takip edebilirsin. Premium ile sınır kalkar."
-    PaywallReason.BACKUP ->
-        "Yedekleme Premium'a dahil. Ürünlerini ve faturalarını yeni telefonuna güvenle taşı."
-    PaywallReason.GENERAL ->
-        "Tüm iade ve garanti sürelerin, faturaların tek yerde. Sınırsız."
+private fun PaywallReason.subtitle(s: Strings): String = when (this) {
+    PaywallReason.LIMIT -> s.paywallLimit(FREE_PRODUCT_LIMIT)
+    PaywallReason.BACKUP -> s.paywallBackup
+    PaywallReason.GENERAL -> s.paywallGeneral
 }
 
 @Composable

@@ -35,6 +35,7 @@ NELER YAPABİLİRSİN
 • Bitişe birkaç gün kala her gün, son gün ve süre dolduğunda bildirim al; hatırlatma başlangıcını ve saatini sen seç
 • Ajanda ekranında yaklaşan tüm bitiş tarihlerini haftalara göre gör
 • Ürünlerini ara, yaklaşan, aktif ya da süresi dolmuş olarak filtrele
+• Türkçe ve İngilizce
 
 PREMIUM
 3 ürüne kadar ücretsiz. Garantiledim Premium ile:
@@ -51,6 +52,57 @@ Türkiye'deki tüketici mevzuatına göre mesafeli satışta cayma hakkı teslim
 
 Sorun ya da önerin için: yilmazmurat08@gmail.com
 ```
+
+**İngilizce (en-US) çeviri** — Mağaza girişi > Çeviriler > Çeviri ekle > İngilizce (Amerika Birleşik Devletleri) – en-US. Uygulama telefonu İngilizce olan kullanıcılara İngilizce açılır.
+
+Kısa açıklama:
+
+```
+Track return and warranty periods, get reminded before they end.
+```
+
+Tam açıklama:
+
+```
+When does the return window for your purchase close? Is the warranty still valid? Where is the receipt? Garantiledim answers all of these in one place.
+
+Enter the product and its delivery date; Garantiledim calculates a 14-day return period and a 2-year warranty for you and reminds you before they end. Add a photo or PDF of the receipt, open it in its original form whenever you need it, or save it to your Downloads folder.
+
+WHAT YOU CAN DO
+• Track the return period and the warranty of a product together
+• Periods are calculated from the delivery date; change the dates for a store's own return policy or an extended warranty
+• Snap a receipt with the camera or add a photo or PDF invoice from your gallery or files; the file is stored in its original form, uncompressed
+• Save an invoice to Downloads with one tap
+• Get a notification every day in the last days, on the last day and when a period ends; choose when reminders start and at what time
+• See all upcoming end dates by week in the Agenda
+• Search your products and filter them as upcoming, active or expired
+• Turkish and English
+
+PREMIUM
+Free for up to 3 products. With Garantiledim Premium:
+• Unlimited products and reminders
+• Back up your products, receipts and photos into a single file and restore them on a new phone
+• One-time payment: no subscription, no automatic renewal
+
+YOUR PRIVACY
+• No account needed
+• Your information and documents are stored only on your phone; the app has no server
+• No ads, no tracking
+
+Default periods follow Turkish consumer law (14-day withdrawal right for distance sales, at least 2-year statutory warranty); you can change them for each product. The app is not legal advice.
+
+Questions or suggestions: yilmazmurat08@gmail.com
+```
+
+Sürüm notu (en-US):
+
+```
+<en-US>
+First release of Garantiledim: track return and warranty periods, keep your receipts and get reminded before they end. Free for up to 3 products; Premium adds unlimited products and backup.
+</en-US>
+```
+
+İngilizce ekran görüntüleri: `play/ekran-goruntuleri-en/`.
 
 **Görseller**
 

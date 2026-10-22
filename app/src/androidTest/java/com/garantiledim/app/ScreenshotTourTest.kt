@@ -21,6 +21,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import com.garantiledim.app.domain.Category
 import com.garantiledim.app.domain.Product
+import com.garantiledim.app.i18n.LanguageChoice
 import kotlinx.coroutines.runBlocking
 import org.junit.Rule
 import org.junit.Test
@@ -93,6 +94,9 @@ class ScreenshotTourTest {
 
     @Test
     fun uygulamayiGez() {
+        // Emülatörün dili İngilizce; tur Türkçe başlar, sonda dil ayarından İngilizceye geçilir.
+        app.container.language.set(LanguageChoice.TR)
+        rule.activityRule.scenario.recreate()
         waitForText("İlk ürününü ekle")
         shot("00-ilk-acilis")
 
@@ -174,5 +178,39 @@ class ScreenshotTourTest {
         shot("13b-premium-aktif")
         rule.onNodeWithText("Devam et").performClick()
         waitForText("Yedekten geri yükle")
+
+        // Dil ayarından İngilizceye geç: ekran yeniden kurulur, tüm metinler İngilizce olur.
+        rule.onNodeWithText("Uygulama dili").performScrollTo().performClick()
+        rule.onNodeWithText("English").performClick()
+        waitForText("App language")
+        rule.onNodeWithText("App language").performScrollTo()
+        shot("20-en-profil")
+        rule.onNodeWithText("Home").performClick()
+        waitForText("Today's Warranties")
+        shot("21-en-ana-sayfa")
+        rule.onNodeWithText("My Warranties").performClick()
+        waitForText("products tracked", substring = true)
+        shot("22-en-belgelerim")
+        rule.onNodeWithText("Kablosuz Kulaklık").performClick()
+        waitForText("Last day to return")
+        shot("23-en-detay")
+        rule.onNodeWithContentDescription("Back").performClick()
+        waitForText("products tracked", substring = true)
+        rule.onNodeWithText("Agenda & Reminders").performClick()
+        waitForText("Reminder settings")
+        shot("24-en-ajanda")
+        app.container.premium.setTestState(owned = false, price = "\$9.99")
+        rule.onNodeWithText("Profile & Settings").performClick()
+        waitForText("Go Premium")
+        rule.onNodeWithText("Go Premium").performClick()
+        waitForText("Get Premium", substring = true)
+        shot("25-en-premium")
+        rule.onNodeWithText("Terms of Use").performClick()
+        waitForText("Not legal advice")
+        shot("26-en-kullanim-kosullari")
+        rule.onNodeWithContentDescription("Back").performClick()
+        rule.onNodeWithText("Privacy Policy").performClick()
+        waitForText("Summary")
+        shot("27-en-gizlilik")
     }
 }

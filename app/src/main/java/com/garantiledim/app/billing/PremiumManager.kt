@@ -23,6 +23,7 @@ import com.android.billingclient.api.PurchasesUpdatedListener
 import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
 import com.garantiledim.app.BuildConfig
+import com.garantiledim.app.i18n.Strings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -77,6 +78,7 @@ private object PremiumKeys {
 class PremiumManager(
     private val context: Context,
     private val scope: CoroutineScope,
+    private val strings: () -> Strings,
     licenseKey: String = BuildConfig.PLAY_LICENSE_KEY,
 ) : PurchasesUpdatedListener {
 
@@ -146,7 +148,7 @@ class PremiumManager(
         }
         val productDetails = details
         if (productDetails == null) {
-            _messages.tryEmit("Google Play'e bağlanılamadı, biraz sonra tekrar dene")
+            _messages.tryEmit(strings().playRetryLater)
             refresh()
             return
         }
@@ -166,7 +168,7 @@ class PremiumManager(
             loadPurchases(userRequested = true)
         } else {
             refresh()
-            _messages.tryEmit("Google Play'e bağlanılıyor, biraz sonra tekrar dene")
+            _messages.tryEmit(strings().playConnecting)
         }
     }
 
@@ -175,7 +177,7 @@ class PremiumManager(
             BillingResponseCode.OK -> purchases.orEmpty().forEach(::handle)
             BillingResponseCode.USER_CANCELED -> Unit
             BillingResponseCode.ITEM_ALREADY_OWNED -> loadPurchases(userRequested = true)
-            else -> _messages.tryEmit("Satın alma tamamlanamadı, tekrar dene")
+            else -> _messages.tryEmit(strings().purchaseFailed)
         }
     }
 
@@ -209,18 +211,18 @@ class PremiumManager(
             if (testMode) return@queryPurchasesAsync
             if (result.responseCode != BillingResponseCode.OK) {
                 // Play'e ulaşılamadı: son bilinen durum korunur.
-                if (userRequested) _messages.tryEmit("Google Play'e bağlanılamadı, biraz sonra tekrar dene")
+                if (userRequested) _messages.tryEmit(strings().playRetryLater)
                 return@queryPurchasesAsync
             }
             val premium = purchases.firstOrNull { PREMIUM_PRODUCT_ID in it.products && isAuthentic(it) }
             if (premium == null) {
                 // Satın alma yok, iade edildi ya da doğrulanamadı: saklanan kayıt silinir.
                 clearRecord()
-                if (userRequested) _messages.tryEmit("Bu Google hesabında Premium satın alımı bulunamadı")
+                if (userRequested) _messages.tryEmit(strings().purchaseNotFound)
             } else {
                 handle(premium)
                 if (userRequested && premium.purchaseState == Purchase.PurchaseState.PURCHASED) {
-                    _messages.tryEmit("Premium geri yüklendi")
+                    _messages.tryEmit(strings().purchaseRestored)
                 }
             }
         }
@@ -229,7 +231,7 @@ class PremiumManager(
     private fun handle(purchase: Purchase) {
         if (PREMIUM_PRODUCT_ID !in purchase.products) return
         if (!isAuthentic(purchase)) {
-            _messages.tryEmit("Satın alma doğrulanamadı")
+            _messages.tryEmit(strings().purchaseNotVerified)
             return
         }
         when (purchase.purchaseState) {
@@ -247,7 +249,7 @@ class PremiumManager(
                 }
             }
             Purchase.PurchaseState.PENDING ->
-                _messages.tryEmit("Ödeme onay bekliyor; tamamlanınca Premium kendiliğinden açılır")
+                _messages.tryEmit(strings().purchasePending)
             else -> Unit
         }
     }

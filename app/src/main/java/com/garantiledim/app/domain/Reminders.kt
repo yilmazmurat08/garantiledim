@@ -1,5 +1,6 @@
 package com.garantiledim.app.domain
 
+import com.garantiledim.app.i18n.Strings
 import java.time.LocalDate
 
 /** Bir süre için bugün yapılacak bildirim işlemi. */
@@ -43,17 +44,17 @@ fun reminderAction(
 
 data class ReminderText(val title: String, val body: String)
 
-fun ReminderAction.text(productName: String, type: DurationType): ReminderText = when (this) {
+fun ReminderAction.text(productName: String, type: DurationType, s: Strings): ReminderText = when (this) {
     is ReminderAction.DaysLeft -> ReminderText(
-        title = "${type.label} süresi bitiyor",
-        body = "$productName için ${type.label} süresinin bitmesine $days gün kaldı",
+        title = s.reminderDaysLeftTitle(type),
+        body = s.reminderDaysLeftBody(productName, type, days),
     )
     ReminderAction.DueToday -> ReminderText(
-        title = "${type.label} süresi bugün doluyor",
-        body = "$productName için ${type.label} süresi bugün doluyor",
+        title = s.reminderDueTodayTitle(type),
+        body = s.reminderDueTodayBody(productName, type),
     )
     is ReminderAction.Expired -> ReminderText(
-        title = "${type.label} süresi doldu",
-        body = "$productName için ${type.label} süresi doldu",
+        title = s.reminderExpiredTitle(type),
+        body = s.reminderExpiredBody(productName, type),
     )
 }

@@ -6,7 +6,7 @@ Bu koşullar, Lusnika tarafından geliştirilen Garantiledim Android uygulaması
 
 ## Uygulama ne yapar
 
-Uygulama; satın aldığın ürünlerin iade hakkı ve garanti sürelerini kaydetmene, fiş ve faturalarını saklamana ve süreler dolmadan hatırlatma almana yardımcı olan kişisel bir takip aracıdır. Uygulama şu an ücretsizdir ve reklam içermez.
+Uygulama; satın aldığın ürünlerin iade hakkı ve garanti sürelerini kaydetmene, fiş ve faturalarını saklamana ve süreler dolmadan hatırlatma almana yardımcı olan kişisel bir takip aracıdır. Uygulamanın temel sürümü ücretsizdir ve reklam içermez.
 
 ## Hukuki tavsiye değildir
 

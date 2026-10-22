@@ -1,5 +1,7 @@
 package com.garantiledim.app.domain
 
+import com.garantiledim.app.i18n.EnStrings
+import com.garantiledim.app.i18n.TrStrings
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -8,6 +10,8 @@ import org.junit.Test
 import java.time.LocalDate
 
 class DeadlinesTest {
+
+    private val tr = TrStrings
 
     private val today = LocalDate.of(2026, 10, 3)
 
@@ -84,16 +88,16 @@ class DeadlinesTest {
 
     @Test
     fun `kalan süre metinleri`() {
-        assertEquals("Süre doldu", remainingLabel(today.minusDays(1), today))
-        assertEquals("Bugün son gün", remainingLabel(today, today))
-        assertEquals("1 gün kaldı", remainingLabel(today.plusDays(1), today))
-        assertEquals("60 gün kaldı", remainingLabel(today.plusDays(60), today))
-        assertEquals("2 ay kaldı", remainingLabel(LocalDate.of(2026, 12, 12), today))
-        assertEquals("1 yıl kaldı", remainingLabel(LocalDate.of(2027, 10, 3), today))
-        assertEquals("1 yıl 11 ay kaldı", remainingLabel(LocalDate.of(2028, 9, 21), today))
-        assertEquals("2 yıl 8 ay", shortRemainingLabel(LocalDate.of(2029, 6, 8), today))
-        assertEquals("Bugün", shortRemainingLabel(today, today))
-        assertEquals("2 gün", shortRemainingLabel(today.plusDays(2), today))
+        assertEquals("Süre doldu", remainingLabel(today.minusDays(1), today, tr))
+        assertEquals("Bugün son gün", remainingLabel(today, today, tr))
+        assertEquals("1 gün kaldı", remainingLabel(today.plusDays(1), today, tr))
+        assertEquals("60 gün kaldı", remainingLabel(today.plusDays(60), today, tr))
+        assertEquals("2 ay kaldı", remainingLabel(LocalDate.of(2026, 12, 12), today, tr))
+        assertEquals("1 yıl kaldı", remainingLabel(LocalDate.of(2027, 10, 3), today, tr))
+        assertEquals("1 yıl 11 ay kaldı", remainingLabel(LocalDate.of(2028, 9, 21), today, tr))
+        assertEquals("2 yıl 8 ay", shortRemainingLabel(LocalDate.of(2029, 6, 8), today, tr))
+        assertEquals("Bugün", shortRemainingLabel(today, today, tr))
+        assertEquals("2 gün", shortRemainingLabel(today.plusDays(2), today, tr))
     }
 
     @Test
@@ -101,20 +105,20 @@ class DeadlinesTest {
         val p = product()
         assertEquals(
             "14 günlük iade süresinin 12 günü geçti.",
-            elapsedDescription(p.deadline(DurationType.IADE)!!, today),
+            elapsedDescription(p.deadline(DurationType.IADE)!!, today, tr),
         )
         assertEquals(
             "2 yıllık garantinin 12 günü geçti.",
-            elapsedDescription(p.deadline(DurationType.GARANTI)!!, today),
+            elapsedDescription(p.deadline(DurationType.GARANTI)!!, today, tr),
         )
         val manual = product(warrantyOverride = LocalDate.of(2029, 9, 21))
         assertEquals(
             "3 yıllık garantinin 12 günü geçti. Tarih elle girildi.",
-            elapsedDescription(manual.deadline(DurationType.GARANTI)!!, today),
+            elapsedDescription(manual.deadline(DurationType.GARANTI)!!, today, tr),
         )
         assertEquals(
             "Süre 5 Ekim 2026, Pazartesi tarihinde doldu.",
-            elapsedDescription(p.deadline(DurationType.IADE)!!, LocalDate.of(2026, 10, 7)),
+            elapsedDescription(p.deadline(DurationType.IADE)!!, LocalDate.of(2026, 10, 7), tr),
         )
         assertEquals(12f / 14f, elapsedFraction(p.deadline(DurationType.IADE)!!, today), 0.0001f)
     }
@@ -122,17 +126,43 @@ class DeadlinesTest {
     @Test
     fun `türkçe tarih biçimleri`() {
         val d = LocalDate.of(2026, 10, 5)
-        assertEquals("5 Eki 2026", TrDates.short(d))
-        assertEquals("5 Ekim 2026, Pazartesi", TrDates.long(d))
-        assertEquals("05.10.2026", TrDates.numeric(d))
-        assertEquals("EKİ", TrDates.monthShortUpper(d))
-        assertEquals("Cumartesi", TrDates.weekday(LocalDate.of(2026, 10, 10)))
+        assertEquals("5 Eki 2026", tr.dateShort(d))
+        assertEquals("5 Ekim 2026, Pazartesi", tr.dateLong(d))
+        assertEquals("05.10.2026", tr.dateNumeric(d))
+        assertEquals("EKİ", tr.monthShortUpper(d))
+        assertEquals("Cumartesi", tr.weekday(LocalDate.of(2026, 10, 10)))
     }
 
     @Test
     fun `dosya boyutu`() {
-        assertEquals("900 B", formatFileSize(900))
-        assertEquals("350 KB", formatFileSize(350 * 1024))
-        assertEquals("1,2 MB", formatFileSize((1.2 * 1024 * 1024).toLong()))
+        assertEquals("900 B", tr.fileSize(900))
+        assertEquals("350 KB", tr.fileSize(350 * 1024))
+        assertEquals("1,2 MB", tr.fileSize((1.2 * 1024 * 1024).toLong()))
+    }
+
+    @Test
+    fun `ingilizce metinler`() {
+        val en = EnStrings
+        val d = LocalDate.of(2026, 10, 5)
+        assertEquals("Oct 5, 2026", en.dateShort(d))
+        assertEquals("Monday, October 5, 2026", en.dateLong(d))
+        assertEquals("OCT", en.monthShortUpper(d))
+        assertEquals("1 day left", remainingLabel(today.plusDays(1), today, en))
+        assertEquals("2 days left", remainingLabel(today.plusDays(2), today, en))
+        assertEquals("1 year 11 months left", remainingLabel(LocalDate.of(2028, 9, 21), today, en))
+        assertEquals("1 year", shortRemainingLabel(LocalDate.of(2027, 10, 3), today, en))
+        assertEquals("Last day today", remainingLabel(today, today, en))
+        assertEquals("Expired", shortRemainingLabel(today.minusDays(1), today, en))
+        val p = product()
+        assertEquals(
+            "12 days of the 14-day return period have passed.",
+            elapsedDescription(p.deadline(DurationType.IADE)!!, today, en),
+        )
+        val manual = product(warrantyOverride = LocalDate.of(2029, 9, 21))
+        assertEquals(
+            "12 days of the 3-year warranty have passed. Date entered manually.",
+            elapsedDescription(manual.deadline(DurationType.GARANTI)!!, today, en),
+        )
+        assertEquals("1.2 MB", en.fileSize((1.2 * 1024 * 1024).toLong()))
     }
 }

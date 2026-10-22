@@ -374,3 +374,13 @@ Reklam yoktur. Google Play Faturalandırma kitaplığı internet izni ekler ve k
 - Kullanım koşulları ve gizlilik politikası bağlantıları ilk açılış ekranında da gösterilir (madde 4.1)
 - Uygulamaya internet, analiz ya da ödeme özelliği eklendiğinde iki metin de güncellenmeli ve yürürlük tarihi değiştirilmeli
 
+## 12. Dil desteği (Türkçe / İngilizce)
+
+- Uygulamadaki tüm metinler (ekranlar, mesajlar, bildirimler, tarih biçimleri, Premium ekranı, gizlilik politikası ve kullanım koşulları) Türkçe ve İngilizcedir
+- Profil & Ayarlar > Dil > **Uygulama dili**: Sistem dili / Türkçe / English. Varsayılan "Sistem dili": telefon dili Türkçeyse Türkçe, diğer tüm dillerde İngilizce. Seçim SharedPreferences'ta tutulur; değişince ekran yeniden kurulur (tarih seçici gibi sistem bileşenleri de seçilen dilde açılır) ve bildirim kanalının adı güncellenir
+- Metinler `i18n` paketinde tek bir `Strings` arayüzünde toplanır; `TrStrings` ve `EnStrings` bunu eksiksiz uygular, çevirisi eksik metin derlemeyi durdurur. Ekranlar `LocalStrings`, ViewModel'ler ve arka plan işleri `container.language` üzerinden okur
+- Tarih biçimleri: Türkçe "5 Eki 2026", "5 Ekim 2026, Pazartesi", "05.10.2026"; İngilizce "Oct 5, 2026", "Monday, October 5, 2026". İngilizcede tekil/çoğul ayrımı yapılır ("1 day left", "2 days left")
+- Arama büyük/küçük harf dönüşümünü uygulama diline göre yapar (Türkçede I/ı, İ/i)
+- Yasal metinler: `assets/legal/` (Türkçe) ve `assets/legal/en/` (İngilizce); iki dilde aynı bölüm sayısı birim testiyle denetlenir
+- Ürün adları ve mağaza adları kullanıcının girdiği gibi kalır, çevrilmez
+

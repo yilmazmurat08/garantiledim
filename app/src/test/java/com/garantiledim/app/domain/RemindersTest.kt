@@ -1,5 +1,7 @@
 package com.garantiledim.app.domain
 
+import com.garantiledim.app.i18n.EnStrings
+import com.garantiledim.app.i18n.TrStrings
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -52,15 +54,28 @@ class RemindersTest {
     fun `bildirim metinleri`() {
         assertEquals(
             "Kablosuz Kulaklık için İade hakkı süresinin bitmesine 2 gün kaldı",
-            ReminderAction.DaysLeft(2).text("Kablosuz Kulaklık", DurationType.IADE).body,
+            ReminderAction.DaysLeft(2).text("Kablosuz Kulaklık", DurationType.IADE, TrStrings).body,
         )
         assertEquals(
             "Akıllı Saat için Garanti süresi bugün doluyor",
-            ReminderAction.DueToday.text("Akıllı Saat", DurationType.GARANTI).body,
+            ReminderAction.DueToday.text("Akıllı Saat", DurationType.GARANTI, TrStrings).body,
         )
         assertEquals(
             "Akıllı Saat için Garanti süresi doldu",
-            ReminderAction.Expired(true).text("Akıllı Saat", DurationType.GARANTI).body,
+            ReminderAction.Expired(true).text("Akıllı Saat", DurationType.GARANTI, TrStrings).body,
+        )
+    }
+
+    @Test
+    fun `ingilizce bildirim metinleri`() {
+        assertEquals(
+            "2 days left on the return period for Wireless Headphones",
+            ReminderAction.DaysLeft(2).text("Wireless Headphones", DurationType.IADE, EnStrings).body,
+        )
+        assertEquals("Warranty ends today", ReminderAction.DueToday.text("Watch", DurationType.GARANTI, EnStrings).title)
+        assertEquals(
+            "The warranty for Watch has ended",
+            ReminderAction.Expired(true).text("Watch", DurationType.GARANTI, EnStrings).body,
         )
     }
 }

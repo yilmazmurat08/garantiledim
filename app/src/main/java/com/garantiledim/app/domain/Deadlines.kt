@@ -1,5 +1,6 @@
 package com.garantiledim.app.domain
 
+import com.garantiledim.app.i18n.Strings
 import java.time.LocalDate
 import java.time.Period
 import java.time.temporal.ChronoUnit
@@ -58,34 +59,25 @@ fun urgencyOf(days: Long): Urgency = when {
     else -> Urgency.SUCCESS
 }
 
-/** "2 gün kaldı", "1 yıl 3 ay kaldı", "Bugün son gün", "Süre doldu" */
-fun remainingLabel(endDate: LocalDate, today: LocalDate): String {
+/** "2 gün kaldı", "1 yıl 3 ay kaldı", "Bugün son gün", "Süre doldu" (ve İngilizce karşılıkları) */
+fun remainingLabel(endDate: LocalDate, today: LocalDate, s: Strings): String {
     val days = daysRemaining(endDate, today)
+    val p = Period.between(today, endDate)
     return when {
-        days < 0 -> "Süre doldu"
-        days == 0L -> "Bugün son gün"
-        else -> "${remainingAmount(endDate, today)} kaldı"
+        days < 0 -> s.expired
+        days == 0L -> s.lastDayToday
+        else -> s.remaining(days, p.years, p.months)
     }
 }
 
 /** Listelerdeki kısa rozet: "2 gün", "2 ay", "Bugün", "Süre doldu" */
-fun shortRemainingLabel(endDate: LocalDate, today: LocalDate): String {
+fun shortRemainingLabel(endDate: LocalDate, today: LocalDate, s: Strings): String {
     val days = daysRemaining(endDate, today)
-    return when {
-        days < 0 -> "Süre doldu"
-        days == 0L -> "Bugün"
-        else -> remainingAmount(endDate, today)
-    }
-}
-
-private fun remainingAmount(endDate: LocalDate, today: LocalDate): String {
-    val days = daysRemaining(endDate, today)
-    if (days <= 60) return "$days gün"
     val p = Period.between(today, endDate)
     return when {
-        p.years > 0 && p.months > 0 -> "${p.years} yıl ${p.months} ay"
-        p.years > 0 -> "${p.years} yıl"
-        else -> "${p.months} ay"
+        days < 0 -> s.expired
+        days == 0L -> s.today
+        else -> s.remainingShort(days, p.years, p.months)
     }
 }
 
@@ -98,28 +90,13 @@ fun elapsedFraction(deadline: Deadline, today: LocalDate): Float {
 }
 
 /** "14 günlük iade süresinin 12 günü geçti." gibi açıklama. */
-fun elapsedDescription(deadline: Deadline, today: LocalDate): String {
-    val manualNote = if (deadline.isManual) " Tarih elle girildi." else ""
-    if (deadline.endDate.isBefore(today)) {
-        return "Süre ${TrDates.long(deadline.endDate)} tarihinde doldu.$manualNote"
-    }
-    if (today.isBefore(deadline.startDate)) {
-        return "Süre teslim tarihinde (${TrDates.short(deadline.startDate)}) başlayacak.$manualNote"
-    }
+fun elapsedDescription(deadline: Deadline, today: LocalDate, s: Strings): String {
+    val manualNote = if (deadline.isManual) s.manualDateNote else ""
+    if (deadline.endDate.isBefore(today)) return s.elapsedExpired(deadline.endDate) + manualNote
+    if (today.isBefore(deadline.startDate)) return s.elapsedNotStarted(deadline.startDate) + manualNote
     val elapsed = ChronoUnit.DAYS.between(deadline.startDate, today)
     val period = Period.between(deadline.startDate, deadline.endDate)
-    val totalText = when {
-        period.months == 0 && period.days == 0 && period.years > 0 -> "${period.years} yıllık"
-        else -> "${ChronoUnit.DAYS.between(deadline.startDate, deadline.endDate)} günlük"
-    }
-    val subject = when (deadline.type) {
-        DurationType.IADE -> "iade süresinin"
-        DurationType.GARANTI -> "garantinin"
-    }
-    val body = if (elapsed == 0L) {
-        "$totalText $subject ilk günü."
-    } else {
-        "$totalText $subject $elapsed günü geçti."
-    }
-    return body.replaceFirstChar { it.uppercase() } + manualNote
+    val totalYears = period.years.takeIf { period.months == 0 && period.days == 0 && it > 0 }
+    val totalDays = ChronoUnit.DAYS.between(deadline.startDate, deadline.endDate)
+    return s.elapsedProgress(deadline.type, totalYears, totalDays, elapsed) + manualNote
 }

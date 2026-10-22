@@ -20,6 +20,7 @@ import com.garantiledim.app.domain.DurationType
 import com.garantiledim.app.domain.Product
 import com.garantiledim.app.domain.canAddProduct
 import com.garantiledim.app.domain.lockedProductIds
+import com.garantiledim.app.i18n.LanguageChoice
 import com.garantiledim.app.notifications.ReminderWorker
 import com.garantiledim.app.ui.edit.EditProductViewModel
 import com.garantiledim.app.ui.edit.PickTarget
@@ -29,6 +30,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -43,6 +45,12 @@ class FeaturesTest {
     val notifications: GrantPermissionRule = GrantPermissionRule.grant(Manifest.permission.POST_NOTIFICATIONS)
 
     private val app: GarantiledimApp get() = ApplicationProvider.getApplicationContext()
+
+    /** Ekran turu dili İngilizceye çevirmiş olabilir; bu testler Türkçe metinleri doğrular. */
+    @Before
+    fun turkce() {
+        app.container.language.set(LanguageChoice.TR)
+    }
 
     @Test
     fun pdfFaturaKopyalanirOnizlenirVeIndirilenlereKaydedilir() = runBlocking {
