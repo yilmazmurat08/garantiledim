@@ -26,6 +26,7 @@ import com.garantiledim.app.data.toDomain
 import com.garantiledim.app.domain.DurationType
 import com.garantiledim.app.domain.ReminderAction
 import com.garantiledim.app.domain.deadline
+import com.garantiledim.app.domain.lockedProductIds
 import com.garantiledim.app.domain.reminderAction
 import com.garantiledim.app.domain.text
 import kotlinx.coroutines.flow.first
@@ -136,7 +137,11 @@ class ReminderWorker(
         val settings = container.settings.settings.first()
         val today = LocalDate.now()
 
-        for (entity in dao.getAll()) {
+        val entities = dao.getAll()
+        // Premium yokken ücretsiz sınırı aşan ürünlere hatırlatma gönderilmez (SPEC.md madde 10).
+        val locked = lockedProductIds(entities.map { it.toDomain() }, container.settings.premiumOwned.first())
+        for (entity in entities) {
+            if (entity.id in locked) continue
             val product = entity.toDomain()
             var updated = entity
             for (type in DurationType.entries) {

@@ -96,6 +96,8 @@ class ScreenshotTourTest {
         waitForText("İlk ürününü ekle")
         shot("00-ilk-acilis")
 
+        // Tur 6 ürünle gezildiği için Premium açık başlar; sonda ücretsiz sürüm ve paywall gösterilir.
+        runBlocking { app.container.premium.setTestState(owned = true) }
         seed()
         waitForText("Günün Garantileri")
         shot("01-ana-sayfa")
@@ -157,5 +159,20 @@ class ScreenshotTourTest {
         waitForText("Garanti bitişi")
         waitForText("Oyun Konsolu")
         shot("09-kaydedilen-urun")
+
+        runBlocking { app.container.premium.setTestState(owned = false, price = "₺149,99") }
+        rule.onNodeWithContentDescription("Geri").performClick()
+        waitForText("Günün Garantileri")
+        rule.onNodeWithText("Profil & Ayarlar").performClick()
+        waitForText("Premium'a geç")
+        shot("12-profil-premium")
+        rule.onNodeWithText("Premium'a geç").performClick()
+        waitForText("Garantiledim Premium")
+        shot("13-premium")
+        rule.onNodeWithText("Premium'u al", substring = true).performClick()
+        waitForText("Premium aktif", substring = true)
+        shot("13b-premium-aktif")
+        rule.onNodeWithText("Devam et").performClick()
+        waitForText("Yedekten geri yükle")
     }
 }

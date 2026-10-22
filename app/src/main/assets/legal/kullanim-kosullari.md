@@ -1,6 +1,6 @@
 # Kullanım Koşulları
 
-Yürürlük tarihi: 22 Ekim 2026
+Yürürlük tarihi: 23 Ekim 2026
 
 Bu koşullar, Lusnika tarafından geliştirilen Garantiledim Android uygulamasının ("Uygulama") kullanımını düzenler. Uygulamayı kullanarak bu koşulları kabul etmiş olursun.
 
@@ -20,7 +20,7 @@ Hatırlatmalar telefonunun bildirim ayarlarına, pil tasarrufu ayarlarına ve si
 
 ## Veriler ve yedekleme
 
-Girdiğin bilgiler ve eklediğin belgeler yalnızca telefonunda saklanır (ayrıntılar için Gizlilik Politikası'na bak). Telefonun kaybolursa, sıfırlanırsa ya da uygulamayı kaldırırsan bu bilgiler kaybolabilir. Google bulut yedeği ürün listeni ve ayarlarını kapsar, fiş, fatura ve fotoğraf dosyalarını kapsamaz. Önemli belgelerinin bir kopyasını ayrıca saklamanı öneririz; bunun için faturaları "İndir" ile İndirilenler klasörüne kaydedebilirsin.
+Girdiğin bilgiler ve eklediğin belgeler yalnızca telefonunda saklanır (ayrıntılar için Gizlilik Politikası'na bak). Telefonun kaybolursa, sıfırlanırsa ya da uygulamayı kaldırırsan bu bilgiler kaybolabilir. Google bulut yedeği ürün listeni ve ayarlarını kapsar, fiş, fatura ve fotoğraf dosyalarını kapsamaz. Önemli belgelerinin bir kopyasını ayrıca saklamanı öneririz; bunun için faturaları "İndir" ile İndirilenler klasörüne kaydedebilir ya da Premium'daki Yedekle özelliğini kullanabilirsin. Yedek dosyasını saklamak ve korumak senin sorumluluğundadır.
 
 ## Senin içeriğin
 
@@ -36,7 +36,13 @@ Uygulama "olduğu gibi" sunulur. Yürürlükteki mevzuatın izin verdiği ölç�
 
 ## Ücretli özellikler
 
-İleride isteğe bağlı ücretli özellikler (örneğin bulut yedekleme) eklenirse, fiyat, deneme süresi ve iptal koşulları satın almadan önce açıkça gösterilir. Ödemeler Google Play üzerinden alınır ve Google Play'in koşullarına tabidir.
+Uygulamanın ücretsiz sürümünde en fazla 3 ürün takip edilebilir. Garantiledim Premium; sınırsız ürün ve hatırlatma ile yedekleme/geri yükleme özelliğini açar.
+
+- Premium tek seferlik bir satın almadır; abonelik değildir ve otomatik olarak yenilenmez.
+- Fiyat, satın almadan önce uygulamada Google Play'in gösterdiği tutarla açıkça belirtilir.
+- Ödeme Google Play üzerinden alınır; iade ve ödeme koşulları Google Play'in politikalarına tabidir.
+- Premium, satın alımı yapan Google hesabına bağlıdır. Aynı hesapla giriş yapılan başka bir telefonda "Satın alımı geri yükle" ile yeniden açılır.
+- Satın alma iade edilirse Premium kapanır. Ürünlerin silinmez; ücretsiz sınırı aşan ürünlerin hatırlatmaları durur ve yedekleme kapanır.
 
 ## Değişiklikler
 

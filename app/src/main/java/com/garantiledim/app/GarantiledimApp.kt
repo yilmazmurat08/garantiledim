@@ -2,7 +2,9 @@ package com.garantiledim.app
 
 import android.app.Application
 import android.content.Context
+import com.garantiledim.app.billing.PremiumManager
 import com.garantiledim.app.data.AppDatabase
+import com.garantiledim.app.data.BackupManager
 import com.garantiledim.app.data.FileStore
 import com.garantiledim.app.data.ProductRepository
 import com.garantiledim.app.data.SettingsRepository
@@ -26,6 +28,7 @@ class GarantiledimApp : Application() {
         super.onCreate()
         container = AppContainer(this)
         Reminders.createChannel(this)
+        container.premium.refresh()
         // Günlük kontrol açılışta ve bildirim saati her değiştiğinde yeniden zamanlanır.
         container.appScope.launch {
             container.settings.settings
@@ -44,6 +47,8 @@ class AppContainer(context: Context) {
     val files = FileStore(context)
     val products = ProductRepository(database.productDao(), files)
     val settings = SettingsRepository(context)
+    val premium = PremiumManager(context, settings, appScope)
+    val backup = BackupManager(context, database, settings)
     val today = TodayClock()
 }
 

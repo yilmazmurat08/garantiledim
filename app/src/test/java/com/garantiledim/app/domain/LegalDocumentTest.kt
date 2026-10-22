@@ -44,7 +44,7 @@ class LegalDocumentTest {
         val blocks = parseLegal(text)
         assertEquals(LegalBlock.Title("Gizlilik Politikası"), blocks.first())
         val headings = blocks.filterIsInstance<LegalBlock.Heading>().map { it.text }
-        listOf("Kısaca", "İzinler ve neden kullanıldıkları", "Verilerin saklanması ve silinmesi", "İletişim")
+        listOf("Kısaca", "İzinler ve neden kullanıldıkları", "Premium satın alma", "Yedek dosyası (Premium)", "Verilerin saklanması ve silinmesi", "İletişim")
             .forEach { assertTrue("Eksik bölüm: $it", it in headings) }
         assertTrue(text.contains(CONTACT_EMAIL))
         assertTrue(text.contains("$DEVELOPER_NAME tarafından geliştirilmiştir"))
@@ -57,10 +57,12 @@ class LegalDocumentTest {
         val blocks = parseLegal(text)
         assertEquals(LegalBlock.Title("Kullanım Koşulları"), blocks.first())
         val headings = blocks.filterIsInstance<LegalBlock.Heading>().map { it.text }
-        listOf("Hukuki tavsiye değildir", "Sorumluluğun sınırlandırılması", "Uygulanacak hukuk", "İletişim")
+        listOf("Hukuki tavsiye değildir", "Ücretli özellikler", "Sorumluluğun sınırlandırılması", "Uygulanacak hukuk", "İletişim")
             .forEach { assertTrue("Eksik bölüm: $it", it in headings) }
         assertTrue(text.contains(CONTACT_EMAIL))
         assertTrue(text.contains("$DEVELOPER_NAME tarafından geliştirilen"))
         assertFalse("Geliştirici adı Garantiledim olarak kalmamalı", text.contains("Garantiledim sorumlu"))
+        assertTrue("Ücretsiz sınır metinde kodla aynı olmalı", text.contains("en fazla $FREE_PRODUCT_LIMIT ürün"))
+        assertTrue(text.contains("abonelik değildir"))
     }
 }

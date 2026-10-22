@@ -9,6 +9,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +30,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -49,6 +51,7 @@ import com.garantiledim.app.AppContainer
 import com.garantiledim.app.R
 import com.garantiledim.app.domain.Attachment
 import com.garantiledim.app.domain.Deadline
+import com.garantiledim.app.domain.FREE_PRODUCT_LIMIT
 import com.garantiledim.app.domain.Product
 import com.garantiledim.app.domain.TrDates
 import com.garantiledim.app.domain.Urgency
@@ -58,6 +61,7 @@ import com.garantiledim.app.domain.elapsedDescription
 import com.garantiledim.app.domain.elapsedFraction
 import com.garantiledim.app.domain.formatFileSize
 import com.garantiledim.app.domain.isExpired
+import com.garantiledim.app.domain.lockedProductIds
 import com.garantiledim.app.domain.remainingLabel
 import com.garantiledim.app.domain.urgencyOf
 import com.garantiledim.app.ui.appViewModelFactory
@@ -98,6 +102,8 @@ data class DetailUiState(
     val deadlines: List<DeadlineUi> = emptyList(),
     /** Fiş kayıtlı ama dosyası bu telefonda yok (örneğin bulut yedeğinden geri yüklendi). */
     val receiptMissing: Boolean = false,
+    /** Ücretsiz sınırı aştığı için hatırlatması kapalı (SPEC.md madde 10). */
+    val locked: Boolean = false,
     val message: String? = null,
 )
 
@@ -112,7 +118,9 @@ class ProductDetailViewModel(
         container.products.product(id),
         container.today.today,
         message,
-    ) { product, today, msg ->
+        container.products.products,
+        container.premium.isPremium,
+    ) { product, today, msg, all, premium ->
         DetailUiState(
             loaded = true,
             product = product,
@@ -129,6 +137,7 @@ class ProductDetailViewModel(
                     )
                 },
             receiptMissing = product?.receipt?.let { !File(it.path).exists() } == true,
+            locked = id in lockedProductIds(all, premium),
             message = msg,
         )
     }.flowOn(Dispatchers.IO).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DetailUiState())
@@ -161,6 +170,7 @@ class ProductDetailViewModel(
 
 @Composable
 fun ProductDetailScreen(
+    onOpenPremium: () -> Unit,
     onBack: () -> Unit,
     onEdit: (Long) -> Unit,
     viewModel: ProductDetailViewModel = viewModel(factory = appViewModelFactory { c, h -> ProductDetailViewModel(c, h) }),
@@ -234,6 +244,8 @@ fun ProductDetailScreen(
                         color = GColors.TextSecondary,
                     )
                 }
+
+                if (state.locked) LockedBanner(onOpenPremium)
 
                 state.deadlines.forEach { DeadlineCard(it) }
 
@@ -314,6 +326,32 @@ private fun DeadlineCard(ui: DeadlineUi) {
             )
         }
         Text(ui.description, style = GType.Small, color = GColors.TextMuted)
+    }
+}
+
+@Composable
+private fun LockedBanner(onOpenPremium: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .surfaceCard()
+            .border(1.dp, GColors.Warning.copy(alpha = 0.5f), GShapes.Card)
+            .padding(start = 14.dp, top = 12.dp, bottom = 12.dp, end = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        GIcon(R.drawable.ic_lock, tint = GColors.Warning, size = 22.dp)
+        Column(Modifier.weight(1f)) {
+            Text("Bu ürünün hatırlatması kapalı", style = GType.CardTitle, color = GColors.Text)
+            Text(
+                "Ücretsiz sürümde ilk $FREE_PRODUCT_LIMIT ürünün hatırlatmaları çalışır.",
+                style = GType.Small,
+                color = GColors.TextSecondary,
+            )
+        }
+        TextButton(onClick = onOpenPremium) {
+            Text("Premium", style = GType.Label.copy(fontWeight = GType.Badge.fontWeight), color = GColors.Pink)
+        }
     }
 }
 

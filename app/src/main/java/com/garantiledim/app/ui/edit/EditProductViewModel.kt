@@ -9,8 +9,10 @@ import com.garantiledim.app.AppContainer
 import com.garantiledim.app.domain.Attachment
 import com.garantiledim.app.domain.Category
 import com.garantiledim.app.domain.DurationType
+import com.garantiledim.app.domain.FREE_PRODUCT_LIMIT
 import com.garantiledim.app.domain.Photo
 import com.garantiledim.app.domain.Product
+import com.garantiledim.app.domain.canAddProduct
 import com.garantiledim.app.domain.deadline
 import com.garantiledim.app.notifications.Reminders
 import com.garantiledim.app.ui.NEW_PRODUCT_ID
@@ -260,6 +262,12 @@ class EditProductViewModel(
         _state.update { it.copy(busy = true) }
         viewModelScope.launch {
             try {
+                if (!isEdit && !canAddProduct(container.products.count(), container.premium.isPremium.value)) {
+                    _state.update {
+                        it.copy(busy = false, message = "Ücretsiz sürümde en fazla $FREE_PRODUCT_LIMIT ürün eklenebilir")
+                    }
+                    return@launch
+                }
                 val product = s.toProduct(id = if (isEdit) productId else 0)
                     .copy(createdAt = originalCreatedAt)
                 val id = container.products.save(product)

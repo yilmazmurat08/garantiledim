@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,6 +56,7 @@ import androidx.navigation.navArgument
 import com.garantiledim.app.AppContainer
 import com.garantiledim.app.GarantiledimApp
 import com.garantiledim.app.R
+import com.garantiledim.app.domain.canAddProduct
 import com.garantiledim.app.ui.agenda.AgendaScreen
 import com.garantiledim.app.ui.components.GIcon
 import com.garantiledim.app.ui.detail.ProductDetailScreen
@@ -63,11 +65,14 @@ import com.garantiledim.app.ui.home.HomeScreen
 import com.garantiledim.app.ui.legal.LegalDoc
 import com.garantiledim.app.ui.legal.LegalScreen
 import com.garantiledim.app.ui.list.ProductListScreen
+import com.garantiledim.app.ui.premium.PaywallReason
+import com.garantiledim.app.ui.premium.PaywallScreen
 import com.garantiledim.app.ui.profile.ProfileScreen
 import com.garantiledim.app.ui.theme.GColors
 import com.garantiledim.app.ui.theme.GShapes
 import com.garantiledim.app.ui.theme.GType
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 
 enum class Tab(val route: String, val label: String, @DrawableRes val icon: Int) {
     HOME("home", "Ana Sayfa", R.drawable.ic_home),
@@ -83,6 +88,8 @@ private object Routes {
     fun detail(id: Long) = "detail/$id"
     const val LEGAL = "legal/{doc}"
     fun legal(doc: LegalDoc) = "legal/${doc.route}"
+    const val PREMIUM = "premium?reason={reason}"
+    fun premium(reason: PaywallReason = PaywallReason.GENERAL) = "premium?reason=${reason.route}"
 }
 
 const val NEW_PRODUCT_ID = -1L
@@ -103,6 +110,18 @@ fun AppRoot(openProduct: MutableStateFlow<Long?>) {
     val backStack by navController.currentBackStackEntryAsState()
     val currentTab = Tab.entries.firstOrNull { it.route == backStack?.destination?.route }
     val context = LocalContext.current
+    val container = remember { (context.applicationContext as GarantiledimApp).container }
+    val productCount by remember { container.products.products.map { it.size } }.collectAsStateWithLifecycle(0)
+    val premium by container.premium.isPremium.collectAsStateWithLifecycle()
+
+    /** Ücretsiz sınır dolduysa ürün ekleme yerine Premium ekranı açılır. */
+    fun openAdd(entry: NavBackStackEntry) = entry.ifResumed {
+        if (canAddProduct(productCount, premium)) {
+            navController.navigate(Routes.edit())
+        } else {
+            navController.navigate(Routes.premium(PaywallReason.LIMIT))
+        }
+    }
 
     // Bildirime dokunulunca ilgili ürünün detayı açılır.
     val pendingProduct by openProduct.collectAsStateWithLifecycle()
@@ -141,7 +160,7 @@ fun AppRoot(openProduct: MutableStateFlow<Long?>) {
         ) {
             composable(Tab.HOME.route) { entry ->
                 HomeScreen(
-                    onAddProduct = { entry.ifResumed { navController.navigate(Routes.edit()) } },
+                    onAddProduct = { openAdd(entry) },
                     onOpenProduct = { id -> entry.ifResumed { navController.navigate(Routes.detail(id)) } },
                     onOpenTab = { navController.openTab(it) },
                     onOpenLegal = { doc -> entry.ifResumed { navController.navigate(Routes.legal(doc)) } },
@@ -149,7 +168,7 @@ fun AppRoot(openProduct: MutableStateFlow<Long?>) {
             }
             composable(Tab.LIST.route) { entry ->
                 ProductListScreen(
-                    onAddProduct = { entry.ifResumed { navController.navigate(Routes.edit()) } },
+                    onAddProduct = { openAdd(entry) },
                     onOpenProduct = { id -> entry.ifResumed { navController.navigate(Routes.detail(id)) } },
                 )
             }
@@ -160,7 +179,10 @@ fun AppRoot(openProduct: MutableStateFlow<Long?>) {
                 )
             }
             composable(Tab.PROFILE.route) { entry ->
-                ProfileScreen(onOpenLegal = { doc -> entry.ifResumed { navController.navigate(Routes.legal(doc)) } })
+                ProfileScreen(
+                    onOpenLegal = { doc -> entry.ifResumed { navController.navigate(Routes.legal(doc)) } },
+                    onOpenPremium = { reason -> entry.ifResumed { navController.navigate(Routes.premium(reason)) } },
+                )
             }
             composable(
                 route = Routes.LEGAL,
@@ -169,6 +191,21 @@ fun AppRoot(openProduct: MutableStateFlow<Long?>) {
                 val doc = LegalDoc.entries.firstOrNull { it.route == entry.arguments?.getString("doc") }
                     ?: LegalDoc.PRIVACY
                 LegalScreen(doc = doc, onBack = { entry.ifResumed { navController.popBackStack() } })
+            }
+            composable(
+                route = Routes.PREMIUM,
+                arguments = listOf(navArgument("reason") {
+                    type = NavType.StringType
+                    defaultValue = PaywallReason.GENERAL.route
+                }),
+            ) { entry ->
+                val reason = PaywallReason.entries.firstOrNull { it.route == entry.arguments?.getString("reason") }
+                    ?: PaywallReason.GENERAL
+                PaywallScreen(
+                    reason = reason,
+                    onClose = { entry.ifResumed { navController.popBackStack() } },
+                    onOpenLegal = { doc -> entry.ifResumed { navController.navigate(Routes.legal(doc)) } },
+                )
             }
             composable(
                 route = Routes.EDIT,
@@ -198,6 +235,7 @@ fun AppRoot(openProduct: MutableStateFlow<Long?>) {
                 arguments = listOf(navArgument("id") { type = NavType.LongType }),
             ) { entry ->
                 ProductDetailScreen(
+                    onOpenPremium = { entry.ifResumed { navController.navigate(Routes.premium(PaywallReason.LIMIT)) } },
                     onBack = { entry.ifResumed { navController.popBackStack() } },
                     onEdit = { id -> entry.ifResumed { navController.navigate(Routes.edit(id)) } },
                 )
