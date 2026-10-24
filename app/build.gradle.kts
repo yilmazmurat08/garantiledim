@@ -131,7 +131,10 @@ dependencies {
 // ve Premium hiç açılmaz.
 tasks.matching { it.name == "bundleRelease" }.configureEach {
     doFirst {
-        if (playLicenseKey.isBlank()) {
+        // İlk kapalı test sürümü anahtarsız yüklenebilir (Play lisans anahtarı ancak uygulama oluşturulunca
+        // görünür); bu sürümde Premium hiçbir şekilde açılmaz. Premium ürünü anahtarlı sürümden önce etkinleştirilmez.
+        val allowMissing = System.getenv("ALLOW_MISSING_PLAY_LICENSE_KEY") == "true"
+        if (playLicenseKey.isBlank() && !allowMissing) {
             throw GradleException(
                 "Play lisans anahtarı eksik: gradle.properties içindeki garantiledim.playLicenseKey " +
                     "ya da PLAY_LICENSE_KEY ortam değişkeni (Play Console > Para kazanma kurulumu > Lisanslama)."
