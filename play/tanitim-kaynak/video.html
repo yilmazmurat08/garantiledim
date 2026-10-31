@@ -45,7 +45,7 @@ html,body{margin:0;background:#000}
 </div>
 <!-- S1 hook -->
 <div class="scene" id="s1">
-  <div class="big" id="q1" style="top:380px;font-size:150px"></div>
+  <div class="big" id="q1" style="top:300px;font-size:128px;line-height:1.12"></div>
   <div class="big" id="q2" style="top:330px;font-size:104px;line-height:1.15"></div>
 </div>
 <!-- S2 home -->
@@ -103,22 +103,22 @@ html,body{margin:0;background:#000}
 <script>
 const LANG = new URLSearchParams(location.search).get('lang') || 'tr';
 const TX = {
- tr: {title:'Garantiledim', tag:'Garanti sürelerini takipte kal!', q1:'Fiş nerede?', q2:'İade süresi<br>ne zaman bitiyor?',
+ tr: {title:'Garantiledim', tag:'Garanti sürelerini takipte kal!', q1:'Garanti belgen<br>nerede?', q2:'Garantin<br>hâlâ geçerli mi?',
   k2:'TEK YERDE', h2:'Tüm garantilerin<br><em>tek ekranda</em>', d2:'İade ve garanti süreleri teslim tarihinden otomatik hesaplanır.',
   k3:'GERİ SAYIM', h3:'Son günü<br><em>asla kaçırma</em>', d3:'Kalan süre ve ilerleme her an gözünün önünde.', cnt:(n)=>n+' gün',
   k4:'HATIRLATMA', h4:'Süre dolmadan<br><em>haber verir</em>', d4:'Bitişten günler önce bildirim; saatini sen seç.',
-  na:'Garantiledim · şimdi', nt:'İade hakkı süresi bitiyor', nb:'Kablosuz Kulaklık için iade hakkının bitmesine 2 gün kaldı',
-  k5:'FİŞ & FATURA', h5:'Fişini çek,<br><em>faturanı sakla</em>', d5:'Kamera, galeri ya da PDF. Orijinal haliyle saklanır.', c5:['Fotoğraf','PDF','Orijinal kalite'],
+  na:'Garantiledim · şimdi', nt:'Garanti süresi bitiyor', nb:'Akıllı Saat için garanti süresinin bitmesine 3 gün kaldı',
+  k5:'GARANTİ BELGESİ', h5:'Garanti belgen<br><em>hep yanında</em>', d5:'Garanti belgesini ve faturanı fotoğraf ya da PDF olarak sakla; orijinal haliyle.', c5:['Garanti belgesi','Fatura','PDF'],
   t6:'Garantiledim <em>Premium</em>', c6:['∞  Sınırsız ürün','⇪  Yedekle ve taşı','★  Tek seferlik ödeme'],
   h7:'Gizliliğin <em>sende</em>', e:[['Hesap yok','Kayıt gerekmez'],['Reklam yok','Takip de yok'],['Telefonunda','Veriler cihazda kalır'],['Türkçe · English','İki dil desteği']],
   cta:'ŞİMDİ GOOGLE PLAY\'DE',
   shots:['01-ana-sayfa.png','03-detay.png','06-ajanda.png','08-yeni-urun.png','13-premium-nofiyat.png']},
- en: {title:'Garantiledim', tag:'Stay on top of your warranties!', q1:'Where\'s the receipt?', q2:'When does the<br>return window close?',
+ en: {title:'Garantiledim', tag:'Stay on top of your warranties!', q1:'Where\'s your<br>warranty card?', q2:'Is your warranty<br>still valid?',
   k2:'ALL IN ONE PLACE', h2:'Every warranty<br><em>on one screen</em>', d2:'Return and warranty periods are calculated from the delivery date.',
   k3:'COUNTDOWN', h3:'Never miss<br><em>the last day</em>', d3:'Time left and progress, always in sight.', cnt:(n)=>n+(n==1?' day':' days'),
   k4:'REMINDERS', h4:'Get reminded<br><em>before it ends</em>', d4:'Notifications days before the end date, at your chosen time.',
-  na:'Garantiledim · now', nt:'Return period ending soon', nb:'2 days left on the return period for Wireless Headphones',
-  k5:'RECEIPTS', h5:'Snap the receipt,<br><em>keep the invoice</em>', d5:'Camera, gallery or PDF. Stored in original quality.', c5:['Photo','PDF','Original quality'],
+  na:'Garantiledim · now', nt:'Warranty ending soon', nb:'3 days left on the warranty for Smartwatch',
+  k5:'WARRANTY CARD', h5:'Warranty card,<br><em>always at hand</em>', d5:'Warranty certificates and invoices as a photo or PDF.', c5:['Warranty card','Invoice','PDF'],
   t6:'Garantiledim <em>Premium</em>', c6:['∞  Unlimited products','⇪  Back up & move','★  One-time payment'],
   h7:'Your privacy, <em>your call</em>', e:[['No account','No sign-up needed'],['No ads','No tracking either'],['On your phone','Data stays on device'],['English · Türkçe','Two languages']],
   cta:'NOW ON GOOGLE PLAY',
@@ -211,5 +211,5 @@ function render(t){
    const fo=prog(t,45.2,46); $('v').style.opacity=1-fo;}
  }
 }
-window.render=render; document.fonts.ready.then(()=>{document.body.dataset.ready=1;});
+window.render=render; document.fonts.ready.then(()=>{let x=930;['c5a','c5b','c5c'].forEach(c=>{$(c).style.left=x+'px';x+=$(c).offsetWidth+22;});document.body.dataset.ready=1;});
 </script></body></html>

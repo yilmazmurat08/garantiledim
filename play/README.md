@@ -23,14 +23,14 @@ Garantiledim'i Play Console'a eklerken kullanılacak metinler, görseller ve for
 **Tam açıklama** (en fazla 4000 karakter):
 
 ```
-Aldığın ürünün iade hakkı ne zaman bitiyor? Garantisi hâlâ devam ediyor mu? Fatura nerede? Garantiledim bu soruları tek yerde cevaplar.
+Aldığın ürünün garantisi hâlâ devam ediyor mu? Garanti belgesi nerede? İade hakkı ne zaman bitiyor? Garantiledim bu soruları tek yerde cevaplar.
 
 Ürünü ve teslim tarihini gir; Garantiledim 14 günlük iade (cayma) hakkını ve 2 yıllık garanti süresini senin için hesaplar, süre dolmadan seni uyarır. Faturanın fotoğrafını ya da PDF'ini ekle, ihtiyaç duyduğunda orijinal haliyle aç veya İndirilenler klasörüne kaydet.
 
 NELER YAPABİLİRSİN
 • Bir üründe iade hakkını ve garantiyi birlikte takip et
 • Süreler teslim tarihinden otomatik hesaplanır; mağazanın farklı iade süresi ya da ek garanti için tarihi elle değiştirebilirsin
-• Fişi kamerayla çek ya da galeriden, dosyalardan fotoğraf veya PDF fatura ekle; dosya sıkıştırılmadan, orijinal haliyle saklanır
+• Garanti belgeni ve faturanı kamerayla çek ya da galeriden, dosyalardan fotoğraf veya PDF olarak ekle; dosya sıkıştırılmadan, orijinal haliyle saklanır
 • Faturayı tek dokunuşla İndirilenler klasörüne kaydet
 • Bitişe birkaç gün kala her gün, son gün ve süre dolduğunda bildirim al; hatırlatma başlangıcını ve saatini sen seç
 • Ajanda ekranında yaklaşan tüm bitiş tarihlerini haftalara göre gör
@@ -64,14 +64,14 @@ Track return and warranty periods, get reminded before they end.
 Tam açıklama:
 
 ```
-When does the return window for your purchase close? Is the warranty still valid? Where is the receipt? Garantiledim answers all of these in one place.
+Is the warranty on your purchase still valid? Where is the warranty card? When does the return window close? Garantiledim answers all of these in one place.
 
-Enter the product and its delivery date; Garantiledim calculates a 14-day return period and a 2-year warranty for you and reminds you before they end. Add a photo or PDF of the receipt, open it in its original form whenever you need it, or save it to your Downloads folder.
+Enter the product and its delivery date; Garantiledim calculates a 14-day return period and a 2-year warranty for you and reminds you before they end. Add a photo or PDF of the warranty card or invoice, open it in its original form whenever you need it, or save it to your Downloads folder.
 
 WHAT YOU CAN DO
 • Track the return period and the warranty of a product together
 • Periods are calculated from the delivery date; change the dates for a store's own return policy or an extended warranty
-• Snap a receipt with the camera or add a photo or PDF invoice from your gallery or files; the file is stored in its original form, uncompressed
+• Snap your warranty card or invoice with the camera, or add a photo or PDF from your gallery or files; the file is stored in its original form, uncompressed
 • Save an invoice to Downloads with one tap
 • Get a notification every day in the last days, on the last day and when a period ends; choose when reminders start and at what time
 • See all upcoming end dates by week in the Agenda
@@ -81,7 +81,7 @@ WHAT YOU CAN DO
 PREMIUM
 Free for up to 3 products. With Garantiledim Premium:
 • Unlimited products and reminders
-• Back up your products, receipts and photos into a single file and restore them on a new phone
+• Back up your products, warranty documents and photos into a single file and restore them on a new phone
 • One-time payment: no subscription, no automatic renewal
 
 YOUR PRIVACY
@@ -98,7 +98,7 @@ Sürüm notu (en-US):
 
 ```
 <en-US>
-First release of Garantiledim: track return and warranty periods, keep your receipts and get reminded before they end. Free for up to 3 products; Premium adds unlimited products and backup.
+First release of Garantiledim: track warranty and return periods, keep your warranty documents and get reminded before they end. Free for up to 3 products; Premium adds unlimited products and backup.
 </en-US>
 ```
 
@@ -198,7 +198,7 @@ Test satın alması: Play Console > Ayarlar > **Lisans testi** listesine kendi G
 
 ```
 <tr-TR>
-Garantiledim'in ilk sürümü: iade ve garanti sürelerini takip et, faturalarını sakla, süre dolmadan hatırlatma al.
+Garantiledim'in ilk sürümü: garanti ve iade sürelerini takip et, garanti belgelerini sakla, süre dolmadan hatırlatma al.
 </tr-TR>
 ```
 
