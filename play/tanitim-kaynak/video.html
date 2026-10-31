@@ -1,0 +1,215 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style>
+@font-face{font-family:P;src:url(poppins_bold.ttf);font-weight:700}
+@font-face{font-family:P;src:url(poppins_semibold.ttf);font-weight:600}
+@font-face{font-family:P;src:url(poppins_medium.ttf);font-weight:500}
+@font-face{font-family:P;src:url(poppins_regular.ttf);font-weight:400}
+html,body{margin:0;background:#000}
+#v{width:1920px;height:1080px;position:relative;overflow:hidden;font-family:P;color:#F7F2FF;background:#160A28}
+.abs{position:absolute}
+.glow{position:absolute;border-radius:50%;filter:blur(10px)}
+.scene{position:absolute;inset:0;opacity:0}
+.phone{position:absolute;width:404px;height:898px;border-radius:58px;background:#0E0619;padding:12px;box-sizing:border-box;
+ box-shadow:0 0 0 3px #4A3270,0 50px 120px #000c,0 0 160px #FF7AB830;overflow:hidden}
+.phone img{width:100%;height:100%;border-radius:47px;object-fit:cover;object-position:top;display:block}
+.phone .sweep{position:absolute;top:-20%;left:-60%;width:40%;height:140%;background:linear-gradient(90deg,transparent,#ffffff40,transparent);transform:rotate(20deg)}
+.kick{display:inline-block;font-weight:600;font-size:26px;letter-spacing:5px;color:#2A0F3D;background:#FF7AB8;padding:8px 22px;border-radius:999px}
+.h{font-weight:700;font-size:84px;line-height:1.05;letter-spacing:-1.5px}
+.h em{font-style:normal;background:linear-gradient(90deg,#FF7AB8,#C4AAFA);-webkit-background-clip:text;color:transparent}
+.sub{font-weight:400;font-size:34px;line-height:1.4;color:#C7B6E6}
+.block{position:absolute;width:760px}
+.chip{position:absolute;padding:16px 30px;border-radius:999px;font-weight:600;font-size:32px;color:#2A0F3D;box-shadow:0 20px 50px #0008;white-space:nowrap}
+.notif{position:absolute;width:720px;background:#F4EEFC;color:#1E1838;border-radius:30px;padding:26px 30px;box-shadow:0 30px 80px #000c;display:flex;gap:22px;align-items:flex-start}
+.notif img{width:64px;height:64px}
+.big{position:absolute;left:0;right:0;text-align:center;font-weight:700;letter-spacing:-2px}
+.cell{position:absolute;width:520px;height:220px;border-radius:36px;background:#2A1747;box-shadow:0 0 0 2px #4A3270;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+.cell .ic{font-size:64px;line-height:1}
+.cell .t{font-weight:700;font-size:44px}
+.cell .d{font-size:26px;color:#C7B6E6}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;mix-blend-mode:screen}
+#vig{position:absolute;inset:0;background:radial-gradient(ellipse at center,transparent 55%,#000a 100%)}
+#bars{position:absolute;inset:0;pointer-events:none}
+#bars:before,#bars:after{content:"";position:absolute;left:0;right:0;height:var(--bar,0px);background:#000}
+#bars:before{top:0}#bars:after{bottom:0}
+</style></head><body><div id="v">
+<div class="glow" id="g1" style="width:1100px;height:1100px;background:radial-gradient(circle,#FF7AB855,transparent 65%)"></div>
+<div class="glow" id="g2" style="width:1300px;height:1300px;background:radial-gradient(circle,#A78BFA4a,transparent 65%)"></div>
+<div id="parts"></div>
+
+<!-- S0 intro -->
+<div class="scene" id="s0">
+  <div class="abs" id="ring" style="left:960px;top:430px;width:10px;height:10px;border-radius:50%;border:4px solid #FF7AB8"></div>
+  <img id="logo0" src="logo.svg" class="abs" style="left:810px;top:280px;width:300px;height:300px">
+  <div class="big" id="title0" style="top:610px;font-size:120px"></div>
+  <div class="big sub" id="tag0" style="top:770px;font-weight:500;font-size:40px;letter-spacing:0"></div>
+</div>
+<!-- S1 hook -->
+<div class="scene" id="s1">
+  <div class="big" id="q1" style="top:380px;font-size:150px"></div>
+  <div class="big" id="q2" style="top:330px;font-size:104px;line-height:1.15"></div>
+</div>
+<!-- S2 home -->
+<div class="scene" id="s2">
+  <div class="block" id="b2" style="left:170px;top:330px"><span class="kick" id="k2"></span><div class="h" id="h2" style="margin-top:28px"></div><div class="sub" id="d2" style="margin-top:24px"></div></div>
+  <div class="phone" id="p2" style="left:1240px;top:91px"><img id="i2"><div class="sweep"></div></div>
+</div>
+<!-- S3 detail -->
+<div class="scene" id="s3">
+  <div class="phone" id="p3" style="left:300px;top:91px"><img id="i3"><div class="sweep"></div></div>
+  <div class="block" id="b3" style="left:900px;top:300px"><span class="kick" id="k3"></span><div class="h" id="h3" style="margin-top:28px"></div><div class="sub" id="d3" style="margin-top:24px"></div></div>
+  <div class="abs" id="cnt3" style="left:900px;top:700px;font-weight:700;font-size:150px;line-height:1;color:#FF6B8B"></div>
+</div>
+<!-- S4 reminders -->
+<div class="scene" id="s4">
+  <div class="block" id="b4" style="left:170px;top:330px"><span class="kick" id="k4"></span><div class="h" id="h4" style="margin-top:28px"></div><div class="sub" id="d4" style="margin-top:24px"></div></div>
+  <div class="phone" id="p4" style="left:1200px;top:91px"><img id="i4"></div>
+  <div class="notif" id="n4" style="left:1040px;top:180px"><img src="logo.svg"><div><div style="font-size:22px;color:#6B5A8C;font-weight:500" id="na"></div><div style="font-size:30px;font-weight:700;margin-top:4px" id="nt"></div><div style="font-size:26px;margin-top:6px;line-height:1.35" id="nb"></div></div></div>
+</div>
+<!-- S5 receipt -->
+<div class="scene" id="s5">
+  <div class="phone" id="p5" style="left:330px;top:91px"><img id="i5"><div class="sweep"></div></div>
+  <div class="block" id="b5" style="left:930px;top:300px"><span class="kick" id="k5"></span><div class="h" id="h5" style="margin-top:28px"></div><div class="sub" id="d5" style="margin-top:24px"></div></div>
+  <div class="chip" id="c5a" style="background:#F9B4D6;left:930px;top:760px"></div>
+  <div class="chip" id="c5b" style="background:#C4AAFA;left:1160px;top:760px"></div>
+  <div class="chip" id="c5c" style="background:#F7B48E;left:1340px;top:760px"></div>
+</div>
+<!-- S6 premium -->
+<div class="scene" id="s6">
+  <div class="phone" id="p6" style="left:758px;top:150px;transform-origin:50% 0"><img id="i6"></div>
+  <div class="abs" id="t6" style="left:0;right:0;top:40px;text-align:center"></div>
+  <div class="chip" id="c6a" style="background:#F9B4D6;left:260px;top:300px"></div>
+  <div class="chip" id="c6b" style="background:#C4AAFA;left:1250px;top:470px"></div>
+  <div class="chip" id="c6c" style="background:#F7B48E;left:230px;top:660px"></div>
+</div>
+<!-- S7 privacy -->
+<div class="scene" id="s7">
+  <div class="big h" id="h7" style="top:110px;font-size:80px"></div>
+  <div class="cell" id="e1" style="left:380px;top:330px"><div class="ic">🔒</div><div class="t" id="e1t"></div><div class="d" id="e1d"></div></div>
+  <div class="cell" id="e2" style="left:1020px;top:330px"><div class="ic">🚫</div><div class="t" id="e2t"></div><div class="d" id="e2d"></div></div>
+  <div class="cell" id="e3" style="left:380px;top:600px"><div class="ic">📱</div><div class="t" id="e3t"></div><div class="d" id="e3d"></div></div>
+  <div class="cell" id="e4" style="left:1020px;top:600px"><div class="ic">🌍</div><div class="t" id="e4t"></div><div class="d" id="e4d"></div></div>
+</div>
+<!-- S8 outro -->
+<div class="scene" id="s8">
+  <div class="abs" id="ring8" style="left:960px;top:400px;width:10px;height:10px;border-radius:50%;border:4px solid #C4AAFA"></div>
+  <img id="logo8" src="logo.svg" class="abs" style="left:820px;top:260px;width:280px;height:280px">
+  <div class="big" id="title8" style="top:570px;font-size:110px"></div>
+  <div class="big sub" id="tag8" style="top:720px;font-weight:500;font-size:40px;letter-spacing:0"></div>
+  <div class="abs" id="cta8" style="left:0;right:0;top:820px;text-align:center"><span class="kick" style="font-size:30px;letter-spacing:3px;padding:12px 32px" id="ctat"></span></div>
+</div>
+
+<div id="vig"></div><div id="bars"></div><div id="flash"></div>
+</div>
+<script>
+const LANG = new URLSearchParams(location.search).get('lang') || 'tr';
+const TX = {
+ tr: {title:'Garantiledim', tag:'Garanti sürelerini takipte kal!', q1:'Fiş nerede?', q2:'İade süresi<br>ne zaman bitiyor?',
+  k2:'TEK YERDE', h2:'Tüm garantilerin<br><em>tek ekranda</em>', d2:'İade ve garanti süreleri teslim tarihinden otomatik hesaplanır.',
+  k3:'GERİ SAYIM', h3:'Son günü<br><em>asla kaçırma</em>', d3:'Kalan süre ve ilerleme her an gözünün önünde.', cnt:(n)=>n+' gün',
+  k4:'HATIRLATMA', h4:'Süre dolmadan<br><em>haber verir</em>', d4:'Bitişten günler önce bildirim; saatini sen seç.',
+  na:'Garantiledim · şimdi', nt:'İade hakkı süresi bitiyor', nb:'Kablosuz Kulaklık için iade hakkının bitmesine 2 gün kaldı',
+  k5:'FİŞ & FATURA', h5:'Fişini çek,<br><em>faturanı sakla</em>', d5:'Kamera, galeri ya da PDF. Orijinal haliyle saklanır.', c5:['Fotoğraf','PDF','Orijinal kalite'],
+  t6:'Garantiledim <em>Premium</em>', c6:['∞  Sınırsız ürün','⇪  Yedekle ve taşı','★  Tek seferlik ödeme'],
+  h7:'Gizliliğin <em>sende</em>', e:[['Hesap yok','Kayıt gerekmez'],['Reklam yok','Takip de yok'],['Telefonunda','Veriler cihazda kalır'],['Türkçe · English','İki dil desteği']],
+  cta:'ŞİMDİ GOOGLE PLAY\'DE',
+  shots:['01-ana-sayfa.png','03-detay.png','06-ajanda.png','08-yeni-urun.png','13-premium-nofiyat.png']},
+ en: {title:'Garantiledim', tag:'Stay on top of your warranties!', q1:'Where\'s the receipt?', q2:'When does the<br>return window close?',
+  k2:'ALL IN ONE PLACE', h2:'Every warranty<br><em>on one screen</em>', d2:'Return and warranty periods are calculated from the delivery date.',
+  k3:'COUNTDOWN', h3:'Never miss<br><em>the last day</em>', d3:'Time left and progress, always in sight.', cnt:(n)=>n+(n==1?' day':' days'),
+  k4:'REMINDERS', h4:'Get reminded<br><em>before it ends</em>', d4:'Notifications days before the end date, at your chosen time.',
+  na:'Garantiledim · now', nt:'Return period ending soon', nb:'2 days left on the return period for Wireless Headphones',
+  k5:'RECEIPTS', h5:'Snap the receipt,<br><em>keep the invoice</em>', d5:'Camera, gallery or PDF. Stored in original quality.', c5:['Photo','PDF','Original quality'],
+  t6:'Garantiledim <em>Premium</em>', c6:['∞  Unlimited products','⇪  Back up & move','★  One-time payment'],
+  h7:'Your privacy, <em>your call</em>', e:[['No account','No sign-up needed'],['No ads','No tracking either'],['On your phone','Data stays on device'],['English · Türkçe','Two languages']],
+  cta:'NOW ON GOOGLE PLAY',
+  shots:['21-en-ana-sayfa.png','23-en-detay.png','24-en-ajanda.png','23-en-detay.png','25-en-premium-nofiyat.png']},
+}[LANG];
+const $=id=>document.getElementById(id);
+const setH=(id,v)=>{$(id).innerHTML=v};
+// metinleri yerleştir
+setH('tag0',TX.tag); setH('q1',TX.q1); setH('q2',TX.q2);
+['2','3','4','5'].forEach(n=>{setH('k'+n,TX['k'+n]);setH('h'+n,TX['h'+n]);setH('d'+n,TX['d'+n]);});
+setH('na',TX.na);setH('nt',TX.nt);setH('nb',TX.nb);
+['a','b','c'].forEach((x,i)=>{setH('c5'+x,TX.c5[i]);setH('c6'+x,TX.c6[i]);});
+setH('t6','<span class="h" style="font-size:76px">'+TX.t6+'</span>');
+setH('h7',TX.h7); TX.e.forEach((e,i)=>{setH('e'+(i+1)+'t',e[0]);setH('e'+(i+1)+'d',e[1]);});
+setH('tag8',TX.tag); setH('ctat',TX.cta);
+$('i2').src='shots/'+TX.shots[0]; $('i3').src='shots/'+TX.shots[1]; $('i4').src='shots/'+TX.shots[2];
+$('i5').src='shots/'+TX.shots[3]; $('i6').src='shots/'+TX.shots[4];
+
+// başlık harfleri
+function letters(id,text){ $(id).innerHTML=[...text].map(c=>'<span style="display:inline-block;opacity:0">'+c+'</span>').join(''); }
+letters('title0',TX.title); letters('title8',TX.title);
+// parçacıklar (sabit tohumlu)
+let seed=7; const rnd=()=>{seed=(seed*16807)%2147483647;return seed/2147483647;};
+const P=[]; for(let i=0;i<46;i++){const d=document.createElement('div');d.className='abs';const s=2+rnd()*5;
+ d.style.cssText=`width:${s}px;height:${s}px;border-radius:50%;background:${rnd()<.5?'#FF7AB8':'#C4AAFA'}`;$('parts').appendChild(d);
+ P.push({el:d,x:rnd()*1920,y:rnd()*1080,v:20+rnd()*60,a:.15+rnd()*.5,ph:rnd()*6});}
+
+const cl=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const eo=t=>1-Math.pow(1-cl(t),3);            // ease out
+const eio=t=>{t=cl(t);return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2};
+const back=t=>{t=cl(t);const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2)};
+const prog=(t,a,b)=>cl((t-a)/(b-a));
+function style(el,{x=0,y=0,s=1,r=0,o=1,b=0,ry=0}){el.style.transform=`translate(${x}px,${y}px) scale(${s}) rotate(${r}deg)`+(ry?` perspective(1400px) rotateY(${ry}deg)`:'');el.style.opacity=o;el.style.filter=b>0.05?`blur(${b}px)`:'none';}
+
+const S=[[0,4],[4,8],[8,14],[14,20],[20,26],[26,32],[32,36],[36,40],[40,46]];
+const CUTS=[4,6,8,14,20,26,32,36,40];
+function sceneEnv(t,i){const [a,b]=S[i];const L=t-a,D=b-a;
+ if(t<a-0.01||t>b+0.01)return null;
+ const inn=i===0?1:eo(L/0.5), out=(i===S.length-1)?1:1-eo((L-(D-0.35))/0.35);
+ return {L,D,o:Math.min(inn,out),s:lerp(1.12,1,eo(L/0.6))*(out<1?lerp(0.94,1,out):1),b:(1-eo(L/0.5))*14+(1-out)*8};}
+
+function ringAt(id,cx,cy,d,o){const r=$(id);r.style.left=(cx-d/2)+'px';r.style.top=(cy-d/2)+'px';r.style.width=d+'px';r.style.height=d+'px';r.style.opacity=o;}
+function render(t){
+ // arka plan
+ style($('g1'),{x:200+Math.sin(t*.35)*260,y:-300+Math.cos(t*.3)*160});
+ style($('g2'),{x:900+Math.cos(t*.27)*300,y:200+Math.sin(t*.33)*180});
+ P.forEach(p=>{const y=((p.y-p.v*t)%1080+1080)%1080;p.el.style.transform=`translate(${p.x+Math.sin(t+p.ph)*20}px,${y}px)`;p.el.style.opacity=p.a*(0.6+0.4*Math.sin(t*2+p.ph));});
+ // sinema bantları: kanca sahnesinde
+ const bar = t>=4&&t<8 ? 90*eo((t-4)/0.4)*(1-eo((t-7.6)/0.4)) : 0; $('bars').style.setProperty('--bar',bar+'px');
+ // flaş
+ let f=0; CUTS.forEach(c=>{const d=t-c; if(d>=-0.05&&d<0.35) f=Math.max(f,d<0?0:Math.pow(1-d/0.35,2)*0.85);}); $('flash').style.opacity=f;
+
+ for(let i=0;i<S.length;i++){const e=sceneEnv(t,i);const el=$('s'+i);
+  if(!e){el.style.opacity=0;continue;}
+  style(el,{s:e.s,o:e.o,b:e.b}); const L=e.L;
+  if(i===0){
+   const lp=prog(L,0.3,1.3); style($('logo0'),{s:lerp(0.2,1,back(lp)),o:eo(lp*2),r:lerp(-25,0,eo(lp))});
+   const rp=prog(L,0.9,2.2); ringAt('ring',960,430,lerp(40,1500,eo(rp)),(1-rp)*0.9);
+   [...$('title0').children].forEach((c,k)=>{const q=prog(L,1.3+k*0.07,1.65+k*0.07);style(c,{y:lerp(60,0,eo(q)),o:q});});
+   const tg=prog(L,2.5,3.1); style($('tag0'),{y:lerp(30,0,eo(tg)),o:tg});
+  }
+  if(i===1){
+   const a1=prog(L,0,0.25), a2=prog(L,2,2.25);
+   const shake=(x)=>Math.sin(x*90)*12*Math.max(0,1-x*4);
+   style($('q1'),{s:lerp(1.8,1,eo(a1))+ (L<2?L*0.04:0),o:L<1.95?a1:Math.max(0,1-(L-1.95)/0.1),x:shake(L)});
+   style($('q2'),{s:lerp(1.8,1,eo(a2))+(L>=2?(L-2)*0.04:0),o:L<2?0:a2,x:shake(Math.max(0,L-2))});
+  }
+  const textIn=(b,k)=>{const q=prog(L,0.35,1.0);style($(b),{x:lerp(-80,0,eo(q)),o:q});};
+  const phoneIn=(p,from,delay=0.15)=>{const q=prog(L,delay,1.1);style($(p),{x:lerp(from,0,eo(q)),y:Math.sin(L*1.2)*10,r:lerp(from>0?8:-8,0,eo(q)),ry:lerp(from>0?-25:25,from>0?-8:8,eo(q))});};
+  const sweep=(p,at)=>{const sw=$(p).querySelector('.sweep');if(sw){const q=prog(L,at,at+0.9);sw.style.left=lerp(-60,140,eio(q))+'%';}};
+  if(i===2){textIn('b2');phoneIn('p2',700);sweep('p2',1.8);}
+  if(i===3){phoneIn('p3',-700);textIn('b3');sweep('p3',2.2);
+   const q=prog(L,1.2,3.4); const n=Math.round(lerp(14,2,eio(q))); setH('cnt3',TX.cnt(n));
+   style($('cnt3'),{s:L>3.4?1+0.06*Math.sin((L-3.4)*8):1,o:prog(L,1.0,1.4)});}
+  if(i===4){textIn('b4');phoneIn('p4',700);
+   const q=prog(L,1.6,2.4); style($('n4'),{y:lerp(-420,0,back(q)),o:q,s:lerp(0.9,1,eo(q))});}
+  if(i===5){phoneIn('p5',-700);textIn('b5');sweep('p5',2.0);
+   ['c5a','c5b','c5c'].forEach((c,k)=>{const q=prog(L,1.6+k*0.35,2.1+k*0.35);style($(c),{s:lerp(0.3,1,back(q)),o:q,y:Math.sin(L*2+k)*6});});}
+  if(i===6){const q=prog(L,0.1,0.9);style($('p6'),{y:lerp(500,0,eo(q)),s:lerp(0.78,0.88,eo(q))});
+   style($('t6'),{y:lerp(-40,0,eo(prog(L,0.3,0.9))),o:prog(L,0.3,0.9)});
+   ['c6a','c6b','c6c'].forEach((c,k)=>{const q=prog(L,0.9+k*0.45,1.4+k*0.45);style($(c),{x:lerp(k===1?200:-200,0,eo(q)),s:lerp(0.5,1,back(q)),o:q,y:Math.sin(L*2+k)*8});});}
+  if(i===7){style($('h7'),{y:lerp(-40,0,eo(prog(L,0.2,0.8))),o:prog(L,0.2,0.8)});
+   ['e1','e2','e3','e4'].forEach((c,k)=>{const q=prog(L,0.6+k*0.4,1.1+k*0.4);style($(c),{s:lerp(0.6,1,back(q)),o:q});});}
+  if(i===8){const lp=prog(L,0.1,1.0);style($('logo8'),{s:lerp(0.3,1,back(lp)),o:eo(lp*2)});
+   const rp=prog(L,0.5,1.8);ringAt('ring8',960,400,lerp(40,1700,eo(rp)),(1-rp)*0.9);
+   [...$('title8').children].forEach((c,k)=>{const q=prog(L,0.8+k*0.05,1.1+k*0.05);style(c,{y:lerp(50,0,eo(q)),o:q});});
+   style($('tag8'),{o:prog(L,1.8,2.3),y:lerp(20,0,eo(prog(L,1.8,2.3)))});
+   style($('cta8'),{o:prog(L,2.4,2.9),s:lerp(0.7,1,back(prog(L,2.4,2.9)))});
+   const fo=prog(t,45.2,46); $('v').style.opacity=1-fo;}
+ }
+}
+window.render=render; document.fonts.ready.then(()=>{document.body.dataset.ready=1;});
+</script></body></html>
