@@ -31,7 +31,7 @@ Yerelde imzalı AAB:
 UPLOAD_KEYSTORE=/yol/garantiledim-upload.jks UPLOAD_STORE_PASSWORD=... BUILD_NUMBER=<sürüm kodu> ./gradlew bundleRelease
 ```
 
-Play lisans anahtarı (`gradle.properties` > `garantiledim.playLicenseKey`) girilmeden AAB derlenmez; satın alma imzaları bu anahtarla doğrulanır (play/README.md).
+Play lisans anahtarı (`gradle.properties` > `garantiledim.playLicenseKey`) girilmeden AAB derlenmez; satın alma imzaları bu anahtarla doğrulanır (play/README.md). İlk kapalı test sürümü için `ALLOW_MISSING_PLAY_LICENSE_KEY=true` ile anahtarsız derlenebilir; bu sürümde Premium hiçbir şekilde açılmaz.
 
 Çıktı: `app/build/outputs/bundle/release/app-release.aab`. R8 eşleme dosyası (`app/build/outputs/mapping/release/mapping.txt`) çökme raporlarını okunur kılmak için aynı sürüme Play Console'dan eklenir. Her yeni yüklemede `BUILD_NUMBER` (sürüm kodu) bir öncekinden büyük olmalıdır.
 
