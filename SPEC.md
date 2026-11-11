@@ -140,7 +140,7 @@ Aktif sekme pembe (#FF7AB8) ikon + yazı ve üstünde 28×3dp pembe çizgi; pasi
   - İkisi de varsayılan olarak açıktır; en az biri açık olmalıdır (ikisi de kapatılırsa hata gösterilir)
   - Tarihe dokununca tarih seçici açılır ve süre elle değiştirilebilir (mağazanın farklı iade süresi, ek garanti vb.). Elle girilen tarihin altında "Elle girildi · Sıfırla" yazar; Sıfırla otomatik hesaba döner. Bitiş tarihi teslim tarihinden önce olamaz
   - Altında yardım metni: "Mağazadan aldıysan iade hakkını kapatabilir ya da mağazanın süresini girebilirsin. Ek garanti varsa garanti tarihini değiştir."
-- **Fiş / fatura:** Kesik çizgili iki buton:
+- **Garanti belgesi / fatura:** Kesik çizgili iki buton:
   - "Galeriden / dosyadan" → `ActivityResultContracts.OpenDocument` ile `image/*` ve `application/pdf` (e-faturalar genelde PDF gelir)
   - "Kamera ile çek" → `ActivityResultContracts.TakePicture`; çekimden önce uygulamanın kendi dizininde boş bir dosya oluşturulup `FileProvider` URI'si verilir
   - Seçilen içerik URI'si geçicidir; hemen uygulamanın kendi dizinine (`filesDir/receipts/`) **orijinal haliyle, sıkıştırılmadan** kopyalanır. Önizleme için ayrıca küçük bir thumbnail üretilir (`filesDir/thumbs/`; PDF'te `PdfRenderer` ile ilk sayfa)
@@ -164,8 +164,8 @@ Düzenleme modunda aynı ekran mevcut değerlerle dolu açılır. Bir sürenin b
 - **Fiş/fatura satırı:** Thumbnail (PDF için belge ikonu + "PDF"), dosya adı, "PDF · 1,2 MB · orijinal" ve pembe kenarlıklı **İndir** butonu. İndir, **orijinal tam çözünürlüklü dosyayı** cihazın İndirilenler klasörüne kopyalar:
   - Android 10 (API 29) ve üstü: `MediaStore.Downloads` ile, izin gerekmez
   - Android 8–9 (API 26–28): `WRITE_EXTERNAL_STORAGE` izni (`android:maxSdkVersion="28"`) istenip `Environment.DIRECTORY_DOWNLOADS`'a yazılır
-  - Başarılı olunca "Fatura İndirilenler klasörüne kaydedildi" mesajı gösterilir
-- Fiş eklenmemişse bu satır yerine "Fiş / fatura ekle" butonu
+  - Başarılı olunca "Belge İndirilenler klasörüne kaydedildi" mesajı gösterilir
+- Belge eklenmemişse bu satır yerine "Garanti belgesi / fatura ekle" butonu
 - Fiş kayıtlı ama dosyası telefonda yoksa (bulut yedeğinden geri yüklenmiş telefon) satırda "Dosya bu telefonda yok, yeniden ekleyebilirsin" ve "Ekle" butonu (düzenleme ekranını açar). Ürün fotoğrafı ya da önizleme açılamazsa kategori ikonu gösterilir
 - Ürünü silme: düzenleme ekranının en altında, onay diyaloğuyla. Silinince dosyaları ve thumbnail'leri de silinir, bildirim kaydı temizlenir
 
@@ -383,4 +383,6 @@ Reklam yoktur. Google Play Faturalandırma kitaplığı internet izni ekler ve k
 - Arama büyük/küçük harf dönüşümünü uygulama diline göre yapar (Türkçede I/ı, İ/i)
 - Yasal metinler: `assets/legal/` (Türkçe) ve `assets/legal/en/` (İngilizce); iki dilde aynı bölüm sayısı birim testiyle denetlenir
 - Ürün adları ve mağaza adları kullanıcının girdiği gibi kalır, çevrilmez
+- Uygulama içi dil seçimi olduğu için AAB dil kaynaklarına göre bölünmez (`bundle.language.enableSplit = false`); aksi halde telefonun dilinde olmayan sistem bileşeni metinleri (tarih seçici vb.) cihaza indirilmez
+- Uygulamanın odağı garantidir: arayüzde eklenen dosya "Garanti belgesi / fatura" olarak adlandırılır
 

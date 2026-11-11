@@ -130,14 +130,22 @@ class BackupManager(
 
             val array = data.optJSONArray("products") ?: JSONArray()
             val restored = (0 until array.length()).map { i ->
-                runCatching { array.getJSONObject(i).toEntity(::place) }
-                    .getOrElse { throw InvalidBackupException(InvalidBackupException.Reason.CORRUPT) }
+                runCatching { array.getJSONObject(i).toEntity(::place) }.getOrElse {
+                    moved.values.forEach { path -> runCatching { File(path).delete() } }
+                    throw InvalidBackupException(InvalidBackupException.Reason.CORRUPT)
+                }
             }
 
             val old = dao.getAll()
-            database.withTransaction {
-                dao.deleteAll()
-                restored.forEach { dao.insert(it) }
+            try {
+                database.withTransaction {
+                    dao.deleteAll()
+                    restored.forEach { dao.insert(it) }
+                }
+            } catch (e: Exception) {
+                // Kayıt başarısız: yedekten kopyalanan dosyalar ortada kalmasın.
+                moved.values.forEach { runCatching { File(it).delete() } }
+                throw e
             }
             // Eski ürünlerin dosyaları ve bildirimleri temizlenir.
             old.flatMap { listOfNotNull(it.receiptPath, it.receiptThumbPath, it.photoPath, it.photoThumbPath) }

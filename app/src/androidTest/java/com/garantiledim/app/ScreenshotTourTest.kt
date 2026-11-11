@@ -80,7 +80,7 @@ class ScreenshotTourTest {
                 tracksWarranty = war,
             )
         val receipt = app.container.files.importReceipt(
-            TestFiles.uri(app, TestFiles.pdf(app, "ornek-fatura.pdf"))
+            TestFiles.uri(app, TestFiles.pdf(app, "garanti-belgesi.pdf"))
         )
         repo.save(
             product("Kablosuz Kulaklık", "Online Mağaza", Category.ELEKTRONIK, today.minusDays(12), ret = true, war = true)
@@ -117,7 +117,7 @@ class ScreenshotTourTest {
                 p.copy(
                     name = names[p.name] ?: p.name,
                     store = stores[p.store] ?: p.store,
-                    receipt = p.receipt?.copy(fileName = "sample-invoice.pdf"),
+                    receipt = p.receipt?.copy(fileName = "warranty-card.pdf"),
                 )
             )
         }
@@ -146,8 +146,8 @@ class ScreenshotTourTest {
         waitForText("İade son günü")
         shot("03-detay")
         rule.onNodeWithText("İndir", substring = true).performScrollTo().performClick()
-        waitForText("Fatura İndirilenler klasörüne kaydedildi")
-        shot("03b-fatura-indirildi")
+        waitForText("Belge İndirilenler klasörüne kaydedildi")
+        shot("03b-belge-indirildi")
 
         rule.onNodeWithContentDescription("Düzenle").performClick()
         waitForText("Ürünü Düzenle")

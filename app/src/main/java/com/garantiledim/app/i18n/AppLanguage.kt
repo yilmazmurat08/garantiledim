@@ -3,9 +3,9 @@ package com.garantiledim.app.i18n
 import java.util.Locale
 
 /** Uygulamanın desteklediği diller. */
-enum class AppLanguage(val tag: String, val locale: Locale) {
-    TR("tr", Locale.forLanguageTag("tr-TR")),
-    EN("en", Locale.forLanguageTag("en-US"));
+enum class AppLanguage(val locale: Locale) {
+    TR(Locale.forLanguageTag("tr-TR")),
+    EN(Locale.forLanguageTag("en-US"));
 
     val strings: Strings
         get() = when (this) {

@@ -1,6 +1,5 @@
 package com.garantiledim.app.ui.premium
 
-import com.garantiledim.app.i18n.LocalStrings
 import androidx.activity.compose.LocalActivity
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
@@ -44,6 +43,7 @@ import com.garantiledim.app.AppContainer
 import com.garantiledim.app.R
 import com.garantiledim.app.billing.PremiumOffer
 import com.garantiledim.app.domain.FREE_PRODUCT_LIMIT
+import com.garantiledim.app.i18n.LocalStrings
 import com.garantiledim.app.i18n.Strings
 import com.garantiledim.app.ui.appViewModelFactory
 import com.garantiledim.app.ui.components.BackTopBar

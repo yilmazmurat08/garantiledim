@@ -147,8 +147,13 @@ class ProductDetailViewModel(
         )
     }.flowOn(Dispatchers.IO).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), DetailUiState())
 
+    private var downloading = false
+
     fun download() {
         val receipt = state.value.product?.receipt ?: return
+        // Art arda dokunuş aynı dosyayı birden fazla kez indirmesin.
+        if (downloading) return
+        downloading = true
         viewModelScope.launch {
             message.value = try {
                 container.files.exportToDownloads(receipt)
@@ -156,6 +161,7 @@ class ProductDetailViewModel(
             } catch (e: Exception) {
                 container.language.current.receiptSaveFailed
             }
+            downloading = false
         }
     }
 

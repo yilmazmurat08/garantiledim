@@ -112,19 +112,26 @@ class PremiumManager(
     private val _messages = MutableSharedFlow<String>(extraBufferCapacity = 4)
     val messages: SharedFlow<String> = _messages.asSharedFlow()
 
-    private var details: ProductDetails? = null
+    @Volatile private var details: ProductDetails? = null
+
+    /** Bağlantı kurulurken ikinci bir bağlantı isteği gönderilmez (Play bunu hata sayar). */
+    @Volatile private var connecting = false
     private val testMode get() = testOwned.value != null
 
     /** Play'e bağlanır, ürün fiyatını ve mevcut satın almaları yükler. Tekrar çağrılabilir. */
     fun refresh() {
         if (testMode) return
+        if (_offer.value !is PremiumOffer.Available) _offer.value = PremiumOffer.Loading
         if (client.isReady) {
             loadProduct()
             loadPurchases(userRequested = false)
             return
         }
+        if (connecting) return
+        connecting = true
         client.startConnection(object : BillingClientStateListener {
             override fun onBillingSetupFinished(result: BillingResult) {
+                connecting = false
                 if (testMode) return
                 if (result.responseCode == BillingResponseCode.OK) {
                     loadProduct()
@@ -136,6 +143,7 @@ class PremiumManager(
 
             override fun onBillingServiceDisconnected() {
                 // enableAutoServiceReconnection bir sonraki istekte yeniden bağlanır.
+                connecting = false
             }
         })
     }
@@ -158,7 +166,11 @@ class PremiumManager(
             )
             .build()
         val result = client.launchBillingFlow(activity, params)
-        if (result.responseCode == BillingResponseCode.ITEM_ALREADY_OWNED) loadPurchases(userRequested = true)
+        when (result.responseCode) {
+            BillingResponseCode.OK, BillingResponseCode.USER_CANCELED -> Unit
+            BillingResponseCode.ITEM_ALREADY_OWNED -> loadPurchases(userRequested = true)
+            else -> _messages.tryEmit(strings().purchaseFailed)
+        }
     }
 
     /** "Satın alımı geri yükle": aynı Google hesabıyla yapılmış satın almayı yeniden sorgular. */

@@ -119,7 +119,9 @@ class EditProductViewModel(
             viewModelScope.launch {
                 val product = container.products.get(productId)
                 if (product == null) {
-                    _state.update { it.copy(loaded = true, message = container.language.current.errorProductNotFound) }
+                    // Ürün bu arada silinmiş: boş bir düzenleme formu göstermek yerine ekran kapanır.
+                    saved = true
+                    _state.update { it.copy(loaded = true, result = EditResult.Deleted) }
                     return@launch
                 }
                 originalCreatedAt = product.createdAt
@@ -153,9 +155,9 @@ class EditProductViewModel(
         return _state.value.formOnly() != initial
     }
 
-    fun onName(value: String) = _state.update { it.copy(name = value, nameError = null) }
+    fun onName(value: String) = _state.update { it.copy(name = value.take(MAX_NAME_LENGTH), nameError = null) }
 
-    fun onStore(value: String) = _state.update { it.copy(store = value) }
+    fun onStore(value: String) = _state.update { it.copy(store = value.take(MAX_STORE_LENGTH)) }
 
     fun onCategory(value: Category) = _state.update { it.copy(category = value) }
 
@@ -287,15 +289,20 @@ class EditProductViewModel(
     }
 
     fun delete() {
-        if (!isEdit) return
+        if (!isEdit || _state.value.busy) return
+        _state.update { it.copy(busy = true) }
         viewModelScope.launch {
-            container.products.delete(productId)
-            Reminders.cancel(container.appContext, productId)
-            saved = true
-            handle.remove<Bundle>(KEY_DRAFT)
-            container.files.delete(importedPaths.toList())
-            importedPaths.clear()
-            _state.update { it.copy(result = EditResult.Deleted) }
+            try {
+                container.products.delete(productId)
+                Reminders.cancel(container.appContext, productId)
+                saved = true
+                handle.remove<Bundle>(KEY_DRAFT)
+                container.files.delete(importedPaths.toList())
+                importedPaths.clear()
+                _state.update { it.copy(busy = false, result = EditResult.Deleted) }
+            } catch (e: Exception) {
+                _state.update { it.copy(busy = false, message = container.language.current.operationFailed) }
+            }
         }
     }
 
@@ -370,6 +377,10 @@ class EditProductViewModel(
 
     private companion object {
         const val KEY_DRAFT = "draft"
+
+        /** Kartlarda ve bildirimlerde taşmayı önlemek için ad ve mağaza uzunluğu sınırlanır. */
+        const val MAX_NAME_LENGTH = 80
+        const val MAX_STORE_LENGTH = 60
     }
 }
 

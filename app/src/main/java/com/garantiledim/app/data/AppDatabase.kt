@@ -27,6 +27,9 @@ interface ProductDao {
     @Query("SELECT * FROM products")
     suspend fun getAll(): List<ProductEntity>
 
+    @Query("SELECT COUNT(*) FROM products")
+    suspend fun count(): Int
+
     @Insert
     suspend fun insert(product: ProductEntity): Long
 

@@ -181,7 +181,6 @@ interface Strings {
     val enteredManually: String
     val reset: String
     fun periodDefault(type: DurationType): String
-    val errorProductNotFound: String
     val errorNameEmpty: String
     val errorDeliveryBeforePurchase: String
     val errorNoPeriod: String

@@ -16,7 +16,7 @@ class ProductRepository(
 
     suspend fun get(id: Long): Product? = dao.getById(id)?.toDomain()
 
-    suspend fun count(): Int = dao.getAll().size
+    suspend fun count(): Int = dao.count()
 
     /** Yeni ürünü ekler ya da mevcut ürünü günceller; ürünün id'sini döner. */
     suspend fun save(product: Product): Long {

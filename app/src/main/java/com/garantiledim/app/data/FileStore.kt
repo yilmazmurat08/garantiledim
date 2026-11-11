@@ -106,10 +106,13 @@ class FileStore(
     suspend fun exportToDownloads(attachment: Attachment) = withContext(Dispatchers.IO) {
         val source = File(attachment.path)
         if (!source.exists()) throw FileNotFoundException(attachment.path)
+        // Dosya adı kullanıcıdan ya da yedekten gelir; klasör ayırıcıları ve geçersiz karakterler temizlenir.
+        val safeName = attachment.fileName.replace(Regex("[\\\\/:*?\"<>|\\u0000-\\u001f]"), "_").trim('.', ' ')
+            .ifBlank { source.name }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val resolver = context.contentResolver
             val values = ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, attachment.fileName)
+                put(MediaStore.MediaColumns.DISPLAY_NAME, safeName)
                 put(MediaStore.MediaColumns.MIME_TYPE, attachment.mimeType)
                 put(MediaStore.MediaColumns.IS_PENDING, 1)
             }
@@ -129,7 +132,7 @@ class FileStore(
             @Suppress("DEPRECATION")
             val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
             dir.mkdirs()
-            val target = uniqueFile(dir, attachment.fileName)
+            val target = uniqueFile(dir, safeName)
             source.copyTo(target)
             MediaScannerConnection.scanFile(context, arrayOf(target.path), arrayOf(attachment.mimeType), null)
         }

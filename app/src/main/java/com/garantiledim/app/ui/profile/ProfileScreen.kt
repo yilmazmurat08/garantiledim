@@ -142,7 +142,11 @@ class ProfileViewModel(private val container: AppContainer) : ViewModel() {
 
     fun setPhoto(uri: Uri) {
         viewModelScope.launch {
-            val photo = runCatching { container.files.importPhoto(uri) }.getOrNull() ?: return@launch
+            val photo = runCatching { container.files.importPhoto(uri) }.getOrNull()
+            if (photo == null) {
+                messages.tryEmit(t.errorPhotoAdd)
+                return@launch
+            }
             replacePhoto(photo)
         }
     }

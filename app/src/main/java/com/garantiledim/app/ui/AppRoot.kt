@@ -27,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -74,7 +75,7 @@ import com.garantiledim.app.ui.theme.GColors
 import com.garantiledim.app.ui.theme.GShapes
 import com.garantiledim.app.ui.theme.GType
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 enum class Tab(val route: String, @DrawableRes val icon: Int) {
     HOME("home", R.drawable.ic_home),
@@ -120,15 +121,18 @@ fun AppRoot(openProduct: MutableStateFlow<Long?>) {
     val currentTab = Tab.entries.firstOrNull { it.route == backStack?.destination?.route }
     val context = LocalContext.current
     val container = remember { (context.applicationContext as GarantiledimApp).container }
-    val productCount by remember { container.products.products.map { it.size } }.collectAsStateWithLifecycle(0)
-    val premium by container.premium.isPremium.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
 
-    /** Ücretsiz sınır dolduysa ürün ekleme yerine Premium ekranı açılır. */
+    /**
+     * Ücretsiz sınır dolduysa ürün ekleme yerine Premium ekranı açılır. Ürün sayısı ve Premium durumu
+     * dokunma anında kaynağından okunur; açılışın ilk anındaki varsayılan değerlere güvenilmez.
+     */
     fun openAdd(entry: NavBackStackEntry) = entry.ifResumed {
-        if (canAddProduct(productCount, premium)) {
-            navController.navigate(Routes.edit())
-        } else {
-            navController.navigate(Routes.premium(PaywallReason.LIMIT))
+        scope.launch {
+            val allowed = canAddProduct(container.products.count(), container.premium.isPremiumNow())
+            entry.ifResumed {
+                navController.navigate(if (allowed) Routes.edit() else Routes.premium(PaywallReason.LIMIT))
+            }
         }
     }
 

@@ -3,7 +3,6 @@ package com.garantiledim.app.ui.legal
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,6 +24,7 @@ import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import com.garantiledim.app.R
 import com.garantiledim.app.domain.CONTACT_EMAIL
 import com.garantiledim.app.domain.LegalBlock
@@ -51,7 +51,7 @@ enum class LegalDoc(val route: String, private val trAsset: String, private val 
 }
 
 fun sendContactEmail(context: Context, subject: String) {
-    val intent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:$CONTACT_EMAIL"))
+    val intent = Intent(Intent.ACTION_SENDTO, "mailto:$CONTACT_EMAIL".toUri())
         .putExtra(Intent.EXTRA_SUBJECT, subject)
     try {
         context.startActivity(intent)

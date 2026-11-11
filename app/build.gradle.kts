@@ -76,6 +76,14 @@ android {
         buildConfig = true
     }
 
+    // Dil uygulama içinden seçilebildiği için AAB dil kaynaklarına göre bölünmez; aksi halde telefonun
+    // dilinde olmayan kaynaklar (ör. tarih seçicinin Türkçe metinleri) cihaza hiç indirilmez.
+    bundle {
+        language {
+            enableSplit = false
+        }
+    }
+
     testOptions {
         animationsDisabled = true
     }

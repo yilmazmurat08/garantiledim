@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Resources
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.core.content.edit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,7 +31,7 @@ class LanguageStore(context: Context) {
     val current: Strings get() = _strings.value
 
     fun set(choice: LanguageChoice) {
-        prefs.edit().putString(KEY, choice.name).apply()
+        prefs.edit { putString(KEY, choice.name) }
         _choice.value = choice
         refresh()
     }
