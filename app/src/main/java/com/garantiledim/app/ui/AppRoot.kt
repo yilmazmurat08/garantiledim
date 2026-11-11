@@ -27,7 +27,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,6 +56,7 @@ import androidx.navigation.navArgument
 import com.garantiledim.app.AppContainer
 import com.garantiledim.app.GarantiledimApp
 import com.garantiledim.app.R
+import com.garantiledim.app.domain.Product
 import com.garantiledim.app.domain.canAddProduct
 import com.garantiledim.app.i18n.LocalStrings
 import com.garantiledim.app.i18n.Strings
@@ -75,7 +75,7 @@ import com.garantiledim.app.ui.theme.GColors
 import com.garantiledim.app.ui.theme.GShapes
 import com.garantiledim.app.ui.theme.GType
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.map
 
 enum class Tab(val route: String, @DrawableRes val icon: Int) {
     HOME("home", R.drawable.ic_home),
@@ -121,19 +121,19 @@ fun AppRoot(openProduct: MutableStateFlow<Long?>) {
     val currentTab = Tab.entries.firstOrNull { it.route == backStack?.destination?.route }
     val context = LocalContext.current
     val container = remember { (context.applicationContext as GarantiledimApp).container }
-    val scope = rememberCoroutineScope()
+    val productCount by remember { container.products.products.map<List<Product>, Int?> { it.size } }
+        .collectAsStateWithLifecycle(null)
+    val premium by container.premium.premiumOrNull.collectAsStateWithLifecycle()
 
     /**
-     * Ücretsiz sınır dolduysa ürün ekleme yerine Premium ekranı açılır. Ürün sayısı ve Premium durumu
-     * dokunma anında kaynağından okunur; açılışın ilk anındaki varsayılan değerlere güvenilmez.
+     * Ücretsiz sınır dolduysa ürün ekleme yerine Premium ekranı açılır. Değerler henüz yüklenmediyse
+     * (açılışın ilk anı) ekleme ekranı açılır; sınır kayıt sırasında yeniden denetlenir.
      */
     fun openAdd(entry: NavBackStackEntry) = entry.ifResumed {
-        scope.launch {
-            val allowed = canAddProduct(container.products.count(), container.premium.isPremiumNow())
-            entry.ifResumed {
-                navController.navigate(if (allowed) Routes.edit() else Routes.premium(PaywallReason.LIMIT))
-            }
-        }
+        val count = productCount
+        val owned = premium
+        val allowed = count == null || owned == null || canAddProduct(count, owned)
+        navController.navigate(if (allowed) Routes.edit() else Routes.premium(PaywallReason.LIMIT))
     }
 
     // Bildirime dokunulunca ilgili ürünün detayı açılır.

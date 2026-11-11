@@ -98,8 +98,12 @@ class PremiumManager(
         .catch { emit(emptyPreferences()) }
         .map { isValidRecord(it[PremiumKeys.json], it[PremiumKeys.signature]) }
 
+    /** Premium durumu; saklanan kayıt okunana kadar (açılışın ilk anı) null. */
+    val premiumOrNull: StateFlow<Boolean?> = combine(storedOwned, testOwned) { stored, test -> test ?: stored }
+        .stateIn(scope, SharingStarted.Eagerly, null)
+
     /** Kullanıcı Premium sahibi mi: saklanan imzalı satın alma kaydı her seferinde doğrulanır. */
-    val isPremium: StateFlow<Boolean> = combine(storedOwned, testOwned) { stored, test -> test ?: stored }
+    val isPremium: StateFlow<Boolean> = premiumOrNull.map { it == true }
         .stateIn(scope, SharingStarted.Eagerly, false)
 
     /** Arka plan işleri için güncel durum (StateFlow'un ilk değerini beklemeden). */
